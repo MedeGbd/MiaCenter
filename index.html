@@ -121,7 +121,80 @@
 
 
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti Captura/Grabación</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        #aviso {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+            z-index: 10000;
+            display: none; /* Oculto inicialmente */
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay"></div>
+    <div id="aviso">
+        <h1>¡Aviso Importante!</h1>
+        <p>Por favor, no realices capturas de pantalla.</p>
+    </div>
+    <h1>Contenido de tu página</h1>
+    <p>Este es un ejemplo de tu contenido.</p>
 
+    <script>
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        window.addEventListener('devtoolschange', function(e) { window.location.href = 'about:blank'; });
+
+        const overlay = document.getElementById("overlay");
+         function updateOverlayPosition(){
+            overlay.style.top = window.scrollY + "px";
+            overlay.style.left = window.scrollX + "px";
+        }
+
+        updateOverlayPosition()
+        window.addEventListener("scroll", updateOverlayPosition);
+
+
+        const aviso = document.getElementById('aviso');
+
+        document.addEventListener('paste', function (e) {
+          const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+           for (const item of items) {
+               if (item.type.includes('image')) {
+                   aviso.style.display = 'block';
+                   setTimeout(function(){
+                        aviso.style.display = 'none';
+                   }, 3000);
+                   break;
+                }
+            }
+
+        });
+
+
+    </script>
+</body>
+</html>
 
 
 
