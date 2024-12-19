@@ -1,15 +1,13 @@
 class ChatMessage {
-    constructor(text, isUser, language = 'es', id = Date.now()) {
+    constructor(text, isUser, language = 'es', id=Date.now()) {
         this.text = text;
         this.isUser = isUser;
         this.language = language;
         this.id = id;
-        this.reactions = [];
     }
 }
 
 const chatMessagesDiv = document.getElementById('chat-messages');
-const chatMessagesDiv2 = document.getElementById('chat-messages-2');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const clearChatButton = document.querySelector('.clear-chat-button');
@@ -25,33 +23,24 @@ const saveChatButton = document.querySelector('.save-chat-button');
 const loadChatButton = document.querySelector('.load-chat-button');
 const loadChatInput = document.getElementById('load-chat-input');
 const searchInput = document.getElementById('search-input');
-const tabButtons = document.querySelectorAll('.tab-button');
-const addTabButton = document.getElementById('add-tab-button');
+
 const loadingIndicator = document.getElementById('loading-indicator');
 const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso'; // Reemplaza con tu API Key
-let chatHistory = {
-    chat1: [],
-    chat2: [],
-};
-let currentTab = 'chat1';
+let chatHistory = [];
 let isVoiceRecognitionActive = false;
 let recognition;
 let translations = {};
 let currentLanguage = localStorage.getItem('chatLanguage') || 'es';
-let tabCounter = 3;
 
-function showLoadingIndicator(show, tabId = currentTab) {
-    const loading = tabId === 'chat1' ? loadingIndicator : document.getElementById('loading-indicator-2');
-    loading.style.display = show ? 'block' : 'none';
+function showLoadingIndicator(show) {
+    loadingIndicator.style.display = show ? 'block' : 'none';
 }
 
 function loadChatHistory() {
     const storedHistory = localStorage.getItem('chatHistory');
     if (storedHistory) {
         chatHistory = JSON.parse(storedHistory);
-        for (const tab in chatHistory) {
-            chatHistory[tab].forEach(message => addMessageToChat(message, tab));
-        }
+        chatHistory.forEach(message => addMessageToChat(message));
     }
 }
 
@@ -74,8 +63,7 @@ function applyTranslations() {
     });
 }
 
-function addMessageToChat(message, tabId = currentTab) {
-    const chatMessages = tabId === 'chat1' ? chatMessagesDiv : chatMessagesDiv2;
+function addMessageToChat(message) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message');
     if (message.isUser) {
@@ -83,11 +71,11 @@ function addMessageToChat(message, tabId = currentTab) {
         messageDiv.classList.add('user-message-color');
         messageDiv.innerHTML = `<span class="message-text">${message.text}</span>
                              <div class="message-actions">
-                             <button class="edit-button" onclick="editMessage(this, '${message.id}', '${tabId}')"><i class="fas fa-edit"></i></button>
-                            <button class="delete-button" onclick="deleteMessage('${message.id}', '${tabId}')"><i class="fas fa-trash"></i></button>
+                             <button class="edit-button" onclick="editMessage(this, '${message.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="delete-button" onclick="deleteMessage('${message.id}')"><i class="fas fa-trash"></i></button>
                              </div>`;
     } else {
-        messageDiv.classList.add('gemini-message');
+          messageDiv.classList.add('gemini-message');
         messageDiv.classList.add('gemini-message-color');
         let translatedText = message.text;
         if (translationSelector.value === 'enabled' && message.language !== languageSelector.value) {
@@ -101,55 +89,10 @@ function addMessageToChat(message, tabId = currentTab) {
                                         <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>`;
         }
     }
-    const reactionButtons = createReactionButtons(message, tabId);
-    messageDiv.appendChild(reactionButtons);
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatMessagesDiv.appendChild(messageDiv);
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 }
-
-function createReactionButtons(message, tabId) {
-    const reactionContainer = document.createElement('div');
-    reactionContainer.classList.add('reaction-buttons');
-    const reactions = ['👍', '❤️', '😂', '🤔'];
-    reactions.forEach(emoji => {
-        const button = document.createElement('button');
-        button.textContent = emoji;
-        button.addEventListener('click', () => addReaction(message, emoji, tabId));
-        reactionContainer.appendChild(button);
-    });
-    return reactionContainer;
-}
-
-function addReaction(message, reaction, tabId) {
-    const messageIndex = chatHistory[tabId].findIndex(msg => msg.id === message.id);
-    if (messageIndex > -1) {
-        const messageObj = chatHistory[tabId][messageIndex];
-        if (!messageObj.reactions.includes(reaction)) {
-            messageObj.reactions.push(reaction);
-            const messageDiv = document.querySelector(`.chat-messages[data-tab="${tabId}"] .message .message-actions .delete-button[onclick="deleteMessage('${message.id}', '${tabId}')"]`).closest('.message');
-            if (messageDiv) {
-                updateReactionDisplay(messageDiv, messageObj);
-                saveChatHistory();
-            }
-        }
-
-    }
-}
-
-function updateReactionDisplay(messageDiv, message) {
-    const existingReactions = messageDiv.querySelector('.reactions-display');
-    if (existingReactions) {
-        existingReactions.remove();
-    }
-    const reactionDisplay = document.createElement('div');
-    reactionDisplay.classList.add('reactions-display');
-    reactionDisplay.textContent = message.reactions.join('');
-    messageDiv.appendChild(reactionDisplay);
-}
-
-
-function editMessage(button, messageId, tabId) {
-    const chatMessages = tabId === 'chat1' ? chatMessagesDiv : chatMessagesDiv2;
+function editMessage(button, messageId){
     const messageDiv = button.closest('.message');
     const messageTextElement = messageDiv.querySelector('.message-text');
     const originalText = messageTextElement.textContent;
@@ -159,36 +102,37 @@ function editMessage(button, messageId, tabId) {
     inputElement.value = originalText;
     messageTextElement.replaceWith(inputElement);
     inputElement.focus();
-    inputElement.addEventListener('blur', () => {
-        const newText = inputElement.value.trim();
+    inputElement.addEventListener('blur', () =>{
+       const newText = inputElement.value.trim();
         if (newText && newText !== originalText) {
-            const messageIndex = chatHistory[tabId].findIndex(message => message.id === messageId);
-            if (messageIndex > -1) {
-                chatHistory[tabId][messageIndex].text = newText;
-                saveChatHistory();
-                messageTextElement.textContent = newText;
+           const messageIndex = chatHistory.findIndex(message => message.id === messageId);
+           if (messageIndex > -1) {
+               chatHistory[messageIndex].text = newText;
+               saveChatHistory();
+               messageTextElement.textContent = newText;
                 inputElement.replaceWith(messageTextElement);
-            }
-            else {
-                inputElement.replaceWith(messageTextElement);
-            }
+           }
+           else {
+              inputElement.replaceWith(messageTextElement);
+           }
         }
         else {
-            inputElement.replaceWith(messageTextElement);
+             inputElement.replaceWith(messageTextElement);
         }
 
     });
 }
 
-function deleteMessage(messageId, tabId) {
-    const messageIndex = chatHistory[tabId].findIndex(message => message.id === messageId);
+function deleteMessage(messageId) {
+  const messageIndex = chatHistory.findIndex(message => message.id === messageId);
     if (messageIndex > -1) {
-        chatHistory[tabId].splice(messageIndex, 1);
-        saveChatHistory();
-        const messageDiv = document.querySelector(`.chat-messages[data-tab="${tabId}"] .message .message-actions .delete-button[onclick="deleteMessage('${messageId}', '${tabId}')"]`).closest('.message');
-        messageDiv.remove();
+      chatHistory.splice(messageIndex, 1);
+      saveChatHistory();
+      const messageDiv = document.querySelector(`.message .message-actions .delete-button[onclick="deleteMessage('${messageId}')"]`).closest('.message');
+      messageDiv.remove();
     }
 }
+
 
 async function translateText(text, sourceLang, targetLang) {
     try {
@@ -229,12 +173,13 @@ function copyToClipboard(button) {
 async function sendMessage() {
     const messageText = userInput.value.trim();
     if (!messageText) return;
+
     const userMessage = new ChatMessage(messageText, true, languageSelector.value);
-    addMessageToChat(userMessage, currentTab);
-    chatHistory[currentTab].push(userMessage);
+    addMessageToChat(userMessage);
+    chatHistory.push(userMessage);
     saveChatHistory();
     userInput.value = '';
-    showLoadingIndicator(true, currentTab);
+    showLoadingIndicator(true);
     try {
         const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
         const response = await fetch(url, {
@@ -252,36 +197,34 @@ async function sendMessage() {
         if (!response.ok) {
             const error = await response.json();
             const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.error.message}`, false);
-            addMessageToChat(errorMensaje, currentTab);
-            chatHistory[currentTab].push(errorMensaje);
+            addMessageToChat(errorMensaje);
+            chatHistory.push(errorMensaje);
             saveChatHistory();
-            showLoadingIndicator(false, currentTab);
+            showLoadingIndicator(false);
             console.error("Error al consumir el API", response.status, error.error.message);
             return;
         }
         const data = await response.json();
         const geminiResponseText = data.candidates[0].content.parts[0].text;
         const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
-        addMessageToChat(geminiMessage, currentTab);
-        chatHistory[currentTab].push(geminiMessage);
+        addMessageToChat(geminiMessage);
+        chatHistory.push(geminiMessage);
         saveChatHistory();
-        showLoadingIndicator(false, currentTab);
+        showLoadingIndicator(false);
     } catch (error) {
         const errorMensaje = new ChatMessage("Error inesperado. Inténtalo de nuevo más tarde.", false);
-        addMessageToChat(errorMensaje, currentTab);
-        chatHistory[currentTab].push(errorMensaje);
+        addMessageToChat(errorMensaje);
+        chatHistory.push(errorMensaje);
         saveChatHistory();
-        showLoadingIndicator(false, currentTab);
+        showLoadingIndicator(false);
         console.error("Error inesperado:", error);
     }
 }
 
 function clearChat() {
-    const chatMessages = currentTab === 'chat1' ? chatMessagesDiv : chatMessagesDiv2;
-    chatMessages.innerHTML = '';
-    chatHistory[currentTab] = [];
-    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-
+    chatMessagesDiv.innerHTML = '';
+    chatHistory = [];
+    localStorage.removeItem('chatHistory');
 }
 
 function saveChat() {
@@ -304,13 +247,10 @@ function loadChat(event) {
     reader.onload = function (e) {
         try {
             const loadedHistory = JSON.parse(e.target.result);
-            if (typeof loadedHistory === 'object' && loadedHistory !== null) {
+            if (Array.isArray(loadedHistory)) {
                 chatHistory = loadedHistory;
-                  chatMessagesDiv.innerHTML = '';
-                 chatMessagesDiv2.innerHTML = '';
-                 for (const tab in chatHistory) {
-                     chatHistory[tab].forEach(message => addMessageToChat(message, tab));
-                 }
+                chatMessagesDiv.innerHTML = '';
+                chatHistory.forEach(message => addMessageToChat(message));
                 saveChatHistory();
             } else {
                 alert("Formato del archivo no es valido")
@@ -324,5 +264,170 @@ function loadChat(event) {
 }
 
 function searchChat(searchTerm) {
-   const chatMessages = currentTab === 'chat1' ? chatMessagesDiv : chatMessagesDiv2;
-    
+    const messages = chatMessagesDiv.querySelectorAll('.message');
+    messages.forEach(message => {
+        const messageText = message.textContent;
+        const regex = new RegExp(searchTerm, 'gi');
+        const highlightedText = messageText.replace(regex, '<span class="highlight">$&</span>');
+        message.innerHTML = highlightedText;
+    });
+}
+
+function toggleSettingsModal() {
+    settingsModal.style.display = settingsModal.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyTheme(theme) {
+    document.body.classList.remove('light-theme');
+    if (theme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+   // Store the theme setting in localStorage
+    localStorage.setItem('chatTheme', theme);
+}
+
+function applyFont(font) {
+    document.body.style.fontFamily = font;
+    localStorage.setItem('chatFont', font);
+}
+
+async function loadTranslations(lang) {
+    try {
+        const response = await fetch(`${lang}.json`);
+        if (!response.ok) {
+            throw new Error(`No se pudo cargar el archivo de idioma ${lang}.json`);
+        }
+        translations = await response.json();
+        applyTranslations();
+    } catch (error) {
+        console.error("Error al cargar traducciones:", error);
+    }
+}
+
+function loadSettings() {
+   const storedTheme = localStorage.getItem('chatTheme');
+    if (storedTheme) {
+        applyTheme(storedTheme);
+        themeSelector.value = storedTheme;
+    }
+    const storedFont = localStorage.getItem('chatFont');
+    if (storedFont) {
+        applyFont(storedFont);
+        fontSelector.value = storedFont;
+    }
+    const storedTranslation = localStorage.getItem('chatTranslation');
+    if (storedTranslation) {
+        translationSelector.value = storedTranslation;
+    }
+    loadTranslations(currentLanguage);
+    languageSelector.value = currentLanguage;
+     // Set the initial theme based on local storage
+    const initialTheme = localStorage.getItem('chatTheme') || 'dark'; // Default to dark if not found
+    applyTheme(initialTheme);
+    themeSelector.value = initialTheme;
+
+}
+
+function handleSettingsChange(event) {
+    const selectedTheme = themeSelector.value;
+    const selectedFont = fontSelector.value;
+    const selectedTranslation = translationSelector.value;
+    if (event.target.id === 'theme-selector') {
+        applyTheme(selectedTheme);
+    }
+    if (event.target.id === 'font-selector') {
+        applyFont(selectedFont);
+    }
+     if (event.target.id === 'translation-selector') {
+         localStorage.setItem('chatTranslation', selectedTranslation);
+          chatHistory.forEach(message => addMessageToChat(message));
+    }
+}
+
+function startVoiceRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+    } else if ('SpeechRecognition' in window) {
+        recognition = new SpeechRecognition();
+    }
+    if (recognition) {
+        recognition.lang = languageSelector.value;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isVoiceRecognitionActive = true;
+            voiceButton.classList.add('active');
+            voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            console.log('Reconocimiento de voz iniciado.');
+
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            userInput.value = transcript;
+            sendMessage();
+            stopVoiceRecognition();
+        };
+        recognition.onerror = (event) => {
+            stopVoiceRecognition();
+            console.error('Error en el reconocimiento de voz:', event.error);
+        };
+        recognition.onend = () => {
+            if (isVoiceRecognitionActive) {
+                stopVoiceRecognition();
+            }
+        };
+        recognition.start();
+    } else {
+        alert('La API de Reconocimiento de Voz no es compatible en este navegador.');
+    }
+}
+
+function stopVoiceRecognition() {
+    if (recognition) {
+        recognition.stop();
+        voiceButton.classList.remove('active');
+        voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+    }
+    isVoiceRecognitionActive = false;
+}
+
+async function handleLanguageChange() {
+    currentLanguage = languageSelector.value;
+    localStorage.setItem('chatLanguage', currentLanguage);
+    await loadTranslations(currentLanguage);
+    chatHistory.forEach(message => addMessageToChat(message));
+    if (recognition) {
+        recognition.lang = currentLanguage;
+    }
+}
+
+clearChatButton.addEventListener('click', clearChat);
+saveChatButton.addEventListener('click', saveChat);
+loadChatInput.addEventListener('change', loadChat);
+loadChatButton.addEventListener('click', () => loadChatInput.click());
+sendButton.addEventListener('click', sendMessage);
+settingsButton.addEventListener('click', toggleSettingsModal);
+closeSettingsModal.addEventListener('click', toggleSettingsModal);
+themeSelector.addEventListener('change', handleSettingsChange);
+fontSelector.addEventListener('change', handleSettingsChange);
+translationSelector.addEventListener('change', handleSettingsChange);
+voiceButton.addEventListener('click', () => {
+    if (!isVoiceRecognitionActive) {
+        startVoiceRecognition();
+    } else {
+        stopVoiceRecognition();
+    }
+});
+searchInput.addEventListener('input', (event) => {
+    searchChat(event.target.value);
+});
+userInput.addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+});
+languageSelector.addEventListener('change', handleLanguageChange);
+
+loadChatHistory();
+loadSettings();
