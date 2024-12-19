@@ -1,23 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat con Gemini</title>
+    <title>Chat con Gemini - Versión Presidencial</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
-        <h1>Chat con Gemini</h1>
+        <h1>Chat con Gemini - Versión Presidencial</h1>
+        <div class="user-settings">
+            <input type="text" id="user-name-input" placeholder="Escribe tu nombre, ciudadano">
+            <button id="set-name-button">Establecer Nombre</button>
+        </div>
         <div id="chat-container">
             <div id="chat-history"></div>
-            <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
-            <button id="send-button">Enviar</button>
+            <div id="chat-input-area">
+                <input type="text" id="user-input" placeholder="Escribe tu pregunta para Gemini...">
+                <button id="send-button">Enviar</button>
+            </div>
         </div>
         <div id="user-count-container">
-            <p>Usuarios conectados: <span id="user-count">0</span></p>
+            <p>Ciudadanos conectados: <span id="user-count">0</span></p>
+            <ul id="user-list"></ul>
         </div>
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
