@@ -1,4 +1,4 @@
-   class ChatMessage {
+class ChatMessage {
         constructor(text, isUser, language = 'es') {
             this.text = text;
             this.isUser = isUser;
@@ -24,7 +24,8 @@
     let chatHistory = [];
      let isVoiceRecognitionActive = false;
     let recognition;
-
+    let translations = {};
+    let currentLanguage = localStorage.getItem('chatLanguage') || 'es';
     function showLoadingIndicator(show) {
         loadingIndicator.style.display = show ? 'block' : 'none';
     }
@@ -40,14 +41,27 @@
     function saveChatHistory() {
        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
    }
+   function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+       const key = element.getAttribute('data-i18n');
+        if (translations[key]) {
+           element.textContent = translations[key];
+       }
+       if(key === 'inputPlaceholder'){
+           element.placeholder =  translations[key];
+      }
+   });
+}
     function addMessageToChat(message) {
          const messageDiv = document.createElement('div');
          messageDiv.classList.add('message');
         if (message.isUser) {
             messageDiv.classList.add('user-message');
+            messageDiv.classList.add('user-message-color');
              messageDiv.innerHTML = message.text;
         } else {
             messageDiv.classList.add('gemini-message');
+              messageDiv.classList.add('gemini-message-color');
               let translatedText = message.text;
                  if (translationSelector.value === 'enabled' && message.language !== languageSelector.value ) {
                      translateText(message.text, message.language, languageSelector.value).then(translation => {
@@ -132,7 +146,7 @@
             }
             const data = await response.json();
             const geminiResponseText = data.candidates[0].content.parts[0].text;
-            const geminiMessage = new ChatMessage(geminiResponseText, false);
+            const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
              addMessageToChat(geminiMessage);
             chatHistory.push(geminiMessage);
               saveChatHistory();
@@ -166,6 +180,19 @@
         document.body.style.fontFamily = font;
         localStorage.setItem('chatFont', font);
     }
+    async function loadTranslations(lang) {
+        try {
+            const response = await fetch(`${lang}.json`);
+              if (!response.ok) {
+                  throw new Error(`No se pudo cargar el archivo de idioma ${lang}.json`);
+                }
+                translations = await response.json();
+                 applyTranslations();
+
+          } catch (error) {
+              console.error("Error al cargar traducciones:", error);
+          }
+      }
     function loadSettings() {
         const storedTheme = localStorage.getItem('chatTheme');
          if (storedTheme) {
@@ -181,10 +208,8 @@
          if (storedTranslation) {
             translationSelector.value = storedTranslation;
          }
-         const storedLanguage = localStorage.getItem('chatLanguage');
-         if (storedLanguage) {
-            languageSelector.value = storedLanguage;
-         }
+        loadTranslations(currentLanguage);
+         languageSelector.value = currentLanguage;
     }
       function handleSettingsChange(event) {
          const selectedTheme = themeSelector.value;
@@ -248,13 +273,16 @@
         }
           isVoiceRecognitionActive = false;
       }
-    function handleLanguageChange() {
-         chatHistory.forEach(message => addMessageToChat(message));
-         localStorage.setItem('chatLanguage', languageSelector.value);
+    async function handleLanguageChange() {
+        currentLanguage = languageSelector.value;
+       localStorage.setItem('chatLanguage', currentLanguage);
+         await loadTranslations(currentLanguage);
+        chatHistory.forEach(message => addMessageToChat(message));
           if(recognition){
-              recognition.lang = languageSelector.value;
+              recognition.lang = currentLanguage;
          }
     }
+
     clearChatButton.addEventListener('click', clearChat);
     sendButton.addEventListener('click', sendMessage);
     settingsButton.addEventListener('click', toggleSettingsModal);
