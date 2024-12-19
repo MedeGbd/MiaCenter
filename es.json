@@ -1,0 +1,22 @@
+{
+    "chatTitle": "Chat con Gemini",
+    "inputPlaceholder": "Escribe tu pregunta...",
+    "sendButton": "Enviar",
+    "loading": "Cargando...",
+    "user": "Usuario",
+    "gemini": "Gemini",
+     "noResponse": "No se pudo obtener una respuesta válida",
+    "serverError": "Error al obtener la respuesta del servidor."
+}
+
+
+ {
+    "chatTitle": "Chat with Gemini",
+    "inputPlaceholder": "Type your question...",
+    "sendButton": "Send",
+    "loading": "Loading...",
+    "user": "User",
+    "gemini": "Gemini",
+    "noResponse": "Could not get a valid response",
+    "serverError": "Error getting server response."
+}
