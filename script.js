@@ -20,7 +20,7 @@ const maxTokensError = document.getElementById('max-tokens-error');
 const temperatureError = document.getElementById('temperature-error');
 const topPError = document.getElementById('top-p-error');
 // Clave de API predefinida
-let savedApiKey = "kPVaJ4AmXOxsd8AkDSjtFyeSstecoVVWXMmsB8oONkechiB4Bgs81CDVP";
+let savedApiKey = "TU_CLAVE_API_AQUI";  // <-- Reemplaza esto con tu clave API de Gemini
 let savedModel = 'gemini-pro';
 let savedMaxTokens = 200;
 let savedTemperature = 0.5;
