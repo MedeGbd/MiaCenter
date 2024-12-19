@@ -58,5 +58,11 @@ function addMessage(sender, message) {
     const messageElement = document.createElement('p');
     messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
     chatHistory.appendChild(messageElement);
+
+    // Agregar línea divisora después de cada mensaje
+    const hr = document.createElement('hr');
+    chatHistory.appendChild(hr);
+
+
     chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll al final del chat
 }
