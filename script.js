@@ -1,8 +1,10 @@
-class ChatMessage {
-        constructor(text, isUser, language = 'es') {
+ class ChatMessage {
+        constructor(text, isUser, language = 'es', isPinterest = false, data=null) {
             this.text = text;
             this.isUser = isUser;
              this.language = language;
+            this.isPinterest = isPinterest;
+             this.data = data;
         }
     }
 
@@ -61,12 +63,35 @@ class ChatMessage {
 }
     function addMessageToChat(message) {
          const messageDiv = document.createElement('div');
-         messageDiv.classList.add('message');
         if (message.isUser) {
+            messageDiv.classList.add('message');
             messageDiv.classList.add('user-message');
               messageDiv.classList.add('user-message-color');
              messageDiv.innerHTML = message.text;
-        } else {
+        }else if (message.isPinterest) {
+
+            messageDiv.classList.add('pinterest-message');
+            if(document.body.classList.contains('light-theme')){
+                 messageDiv.classList.add('light-theme');
+            }
+              if(message.data){
+              let pinterestHtml = '';
+            if (message.data.image) {
+                pinterestHtml += `<img src="${message.data.image}" alt="Pinterest Image" class="pinterest-image">`;
+              }
+              if (message.data.title) {
+                   pinterestHtml += `<h3 class="pinterest-title">${message.data.title}</h3>`;
+              }
+             if (message.data.link) {
+                    pinterestHtml += `<a href="${message.data.link}" class="pinterest-link" target="_blank" rel="noopener noreferrer">Ver en Pinterest</a>`;
+             }
+             messageDiv.innerHTML = `${pinterestHtml}   <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>` ;
+             } else{
+                    messageDiv.innerHTML = `${message.text}   <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>`;
+            }
+        }
+        else {
+              messageDiv.classList.add('message');
             messageDiv.classList.add('gemini-message');
              messageDiv.classList.add('gemini-message-color');
               let translatedText = message.text;
@@ -126,46 +151,94 @@ class ChatMessage {
             chatHistory.push(userMessage);
              saveChatHistory();
             userInput.value = '';
-            showLoadingIndicator(true);
-        try {
-             const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey
-                },
-                  body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: messageText }]
-                    }]
-                }),
-            });
-            if (!response.ok) {
-                const error = await response.json();
-                 const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.error.message}`, false);
-               addMessageToChat(errorMensaje);
-                  chatHistory.push(errorMensaje);
-                 saveChatHistory();
-                   showLoadingIndicator(false);
-                console.error("Error al consumir el API", response.status, error.error.message);
-                return;
-            }
-            const data = await response.json();
-            const geminiResponseText = data.candidates[0].content.parts[0].text;
-            const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
-             addMessageToChat(geminiMessage);
-            chatHistory.push(geminiMessage);
-              saveChatHistory();
-             showLoadingIndicator(false);
-        } catch (error) {
-            const errorMensaje = new ChatMessage("Error inesperado. Inténtalo de nuevo más tarde.", false);
-            addMessageToChat(errorMensaje);
-            chatHistory.push(errorMensaje);
-            saveChatHistory();
-                showLoadingIndicator(false);
-           console.error("Error inesperado:", error);
+             showLoadingIndicator(true);
+            // Expresión regular para detectar URLs de Pinterest
+         const pinterestURLRegex = /^(https?:\/\/(?:www\.)?pinterest\.com\/(?:pin|board|user)\/[\w\d\-_%?=&]*)/i;
 
+         const pinterestMatch = messageText.match(pinterestURLRegex);
+
+
+       if(pinterestMatch){
+             try {
+
+               const apiUrl = `https://api-rin-tohsaka.vercel.app/pinterest?url=${encodeURIComponent(pinterestMatch[0])}`;
+              const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                throw new Error('Error al consumir la API de Pinterest');
+              }
+               const data = await response.json();
+                 let apiResponseMessage;
+                  if(data.status === false){
+                    apiResponseMessage = new ChatMessage(`${data.message}`, false);
+                    addMessageToChat(apiResponseMessage);
+                } else {
+                     //En caso de que la API devuelva datos, aquí se deben procesar y mostrar en el chat.
+
+                    const pinterestData = {
+                          image: data.image || null,
+                           title: data.title || null,
+                           link: data.link || null,
+                     }
+                     apiResponseMessage = new ChatMessage(null, false, null,true, pinterestData );
+                   addMessageToChat(apiResponseMessage);
+              }
+
+                chatHistory.push(apiResponseMessage);
+                   saveChatHistory();
+                  showLoadingIndicator(false);
+
+            }catch (error) {
+               const errorMensaje = new ChatMessage("Error al procesar la URL de Pinterest: " + error.message, false);
+                 addMessageToChat(errorMensaje);
+                 chatHistory.push(errorMensaje);
+                  saveChatHistory();
+                   showLoadingIndicator(false);
+                  console.error("Error inesperado:", error);
+             }
+       }
+        else{
+            // Si no es una URL de Pinterest, sigue el flujo normal del chat con Gemini
+            try {
+              const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+              const response = await fetch(url, {
+                  method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'x-goog-api-key': apiKey
+                  },
+                  body: JSON.stringify({
+                     contents: [{
+                         parts: [{ text: messageText }]
+                      }]
+                 }),
+              });
+               if (!response.ok) {
+                   const error = await response.json();
+                   const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.error.message}`, false);
+                    addMessageToChat(errorMensaje);
+                    chatHistory.push(errorMensaje);
+                     saveChatHistory();
+                     showLoadingIndicator(false);
+                     console.error("Error al consumir el API", response.status, error.error.message);
+                      return;
+                 }
+                  const data = await response.json();
+                const geminiResponseText = data.candidates[0].content.parts[0].text;
+                  const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
+                   addMessageToChat(geminiMessage);
+                   chatHistory.push(geminiMessage);
+                    saveChatHistory();
+                    showLoadingIndicator(false);
+             } catch (error) {
+                   const errorMensaje = new ChatMessage("Error inesperado. Inténtalo de nuevo más tarde.", false);
+                 addMessageToChat(errorMensaje);
+                   chatHistory.push(errorMensaje);
+                  saveChatHistory();
+                   showLoadingIndicator(false);
+                    console.error("Error inesperado:", error);
+
+              }
         }
     }
       function clearChat() {
@@ -211,7 +284,7 @@ class ChatMessage {
 
         }
         function searchChat(searchTerm){
-            const messages = chatMessagesDiv.querySelectorAll('.message');
+            const messages = chatMessagesDiv.querySelectorAll('.message, .pinterest-message');
              messages.forEach(message =>{
                  const messageText = message.textContent;
                   const regex = new RegExp(searchTerm, 'gi');
@@ -283,85 +356,4 @@ class ChatMessage {
       if ('webkitSpeechRecognition' in window) {
           recognition = new webkitSpeechRecognition();
       } else if ('SpeechRecognition' in window) {
-          recognition = new SpeechRecognition();
-      }
-        if(recognition)
-        {
-             recognition.lang = languageSelector.value;
-           recognition.continuous = false;
-            recognition.interimResults = false;
-
-           recognition.onstart = () => {
-               isVoiceRecognitionActive = true;
-             voiceButton.classList.add('active');
-               voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-               console.log('Reconocimiento de voz iniciado.');
-
-           };
-            recognition.onresult = (event) => {
-                 const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                 sendMessage();
-              stopVoiceRecognition();
-            };
-           recognition.onerror = (event) => {
-              stopVoiceRecognition();
-             console.error('Error en el reconocimiento de voz:', event.error);
-           };
-             recognition.onend = () => {
-                 if(isVoiceRecognitionActive) {
-                     stopVoiceRecognition();
-                 }
-          };
-         recognition.start();
-        } else{
-            alert('La API de Reconocimiento de Voz no es compatible en este navegador.');
-        }
-   }
-  function stopVoiceRecognition() {
-        if(recognition) {
-            recognition.stop();
-              voiceButton.classList.remove('active');
-            voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
-        }
-          isVoiceRecognitionActive = false;
-      }
-    async function handleLanguageChange() {
-        currentLanguage = languageSelector.value;
-       localStorage.setItem('chatLanguage', currentLanguage);
-         await loadTranslations(currentLanguage);
-        chatHistory.forEach(message => addMessageToChat(message));
-          if(recognition){
-              recognition.lang = currentLanguage;
-         }
-    }
-
-    clearChatButton.addEventListener('click', clearChat);
-      saveChatButton.addEventListener('click', saveChat);
-      loadChatInput.addEventListener('change', loadChat);
-    loadChatButton.addEventListener('click', () => loadChatInput.click());
-    sendButton.addEventListener('click', sendMessage);
-    settingsButton.addEventListener('click', toggleSettingsModal);
-     closeSettingsModal.addEventListener('click', toggleSettingsModal);
-    themeSelector.addEventListener('change', handleSettingsChange);
-     fontSelector.addEventListener('change', handleSettingsChange);
-     translationSelector.addEventListener('change', handleSettingsChange);
-     voiceButton.addEventListener('click',  () => {
-        if (!isVoiceRecognitionActive) {
-            startVoiceRecognition();
-        } else {
-            stopVoiceRecognition();
-       }
-
-   });
-       searchInput.addEventListener('input', (event) => {
-           searchChat(event.target.value);
-        });
-    userInput.addEventListener('keypress', function(event) {
-       if (event.key === 'Enter') {
-          sendMessage();
-        }
-    });
-  languageSelector.addEventListener('change', handleLanguageChange);
-   loadChatHistory();
-    loadSettings();
+          recognition = new SpeechRecognition
