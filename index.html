@@ -12,11 +12,6 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1 class="chat-title" data-i18n="chatTitle">Chat Gemini Oficial</h1>
-             <div class="chat-tabs">
-                <button class="tab-button active-tab" data-tab="chat1" aria-label="Chat 1">Chat 1</button>
-                 <button class="tab-button" data-tab="chat2" aria-label="Chat 2">Chat 2</button>
-                <button id="add-tab-button" aria-label="Agregar Chat"><i class="fas fa-plus"></i></button>
-             </div>
             <div class="chat-settings">
                 <button class="settings-button"  aria-label="Abrir Configuración"><i class="fas fa-cog"></i></button>
             </div>
@@ -58,8 +53,7 @@
          <div class="search-container">
             <input type="text" id="search-input" placeholder="Buscar en el chat..." aria-label="Buscar en el chat" data-i18n="searchPlaceholder"/>
         </div>
-         <div class="chat-content">
-          <div class="chat-messages" id="chat-messages" data-tab="chat1" aria-live="polite">
+          <div class="chat-messages" id="chat-messages" aria-live="polite">
               <div class="loading-indicator" id="loading-indicator" style="display: none;" data-i18n="loadingIndicator">
                 <i class="fas fa-spinner fa-spin"></i> Gemini está escribiendo...
             </div>
@@ -77,12 +71,6 @@
            <textarea id="notas" style="width: 90%; height: 200px; color: black; background: #fff; border: 1px solid #ccc;"></textarea>
           </div>
         </div>
-        <div class="chat-messages" id="chat-messages-2" data-tab="chat2" aria-live="polite" style="display: none;">
-            <div class="loading-indicator" id="loading-indicator" style="display: none;" data-i18n="loadingIndicator">
-               <i class="fas fa-spinner fa-spin"></i> Gemini está escribiendo...
-           </div>
-        </div>
-       </div>
           <div class="chat-toolbar" style="display: flex; justify-content: space-around;">
         <button id="toggle-pizarra-button" aria-label="Abrir Pizarra" ><i class="fas fa-pencil-alt"></i> Pizarra</button>
         <button id="toggle-notas-button" aria-label="Abrir Notas"><i class="fas fa-sticky-note"></i> Notas</button>
