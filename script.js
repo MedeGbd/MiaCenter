@@ -1,14 +1,34 @@
-const API_KEY = "AIzaSyCO3FjWv0dweKSrA63aAluOLElhpoCCQdQ";  // Reemplaza con tu API Key de Gemini
+const API_KEY = "AIzaSyCO3FjWv0dweKSrA63aAluOLElhpoCCQdQ"; // Reemplaza con tu API Key de Gemini
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistory = document.getElementById('chat-history');
 const userCountDisplay = document.getElementById('user-count');
 
-
 let connectedUsers = new Set();
 let userId = generateAnonymousId();
-connectedUsers.add(userId);
-updateUserCountDisplay();
+
+
+function getStoredUsers() {
+    const storedUsers = localStorage.getItem('connectedUsers');
+    return storedUsers ? new Set(JSON.parse(storedUsers)) : new Set();
+}
+
+function storeUsers(users) {
+    localStorage.setItem('connectedUsers', JSON.stringify(Array.from(users)));
+}
+
+function updateUserList(){
+    connectedUsers = getStoredUsers();
+    connectedUsers.add(userId);
+    storeUsers(connectedUsers);
+    updateUserCountDisplay();
+}
+
+updateUserList();
+window.addEventListener('beforeunload', () => {
+    connectedUsers.delete(userId);
+    storeUsers(connectedUsers);
+});
 
 sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keydown', (event) => {
@@ -17,24 +37,21 @@ userInput.addEventListener('keydown', (event) => {
     }
 });
 
-// Función principal para enviar mensajes
+// Función para enviar el mensaje
 async function sendMessage() {
     const message = userInput.value.trim();
     if (message === "") return;
-
-    addMessage("Tú", message, userId); // Agrega el mensaje al chat, mostrando quién lo envió
-
-    // Determina si se debe enviar el mensaje a Gemini o a otros usuarios
-    if (message.startsWith("/")) {
-         // Si el mensaje empieza con "/" se enviará a Gemini
+    
+     // Determinar si el mensaje es para Gemini o usuarios
+     if (message.startsWith("/")) {
         processGeminiMessage(message.substring(1));
-    } else {
-        // Si no, el mensaje se enviará a todos los usuarios
-       broadcastUserMessage(message);
+     }
+    else{
+        broadcastMessage(message, userId); // Enviar el mensaje a todos
     }
+
     userInput.value = "";
 }
-
 
 //Procesar Mensaje a Geminis
 async function processGeminiMessage(message){
@@ -58,30 +75,29 @@ async function processGeminiMessage(message){
         const geminiResponse = data.candidates[0]?.content?.parts[0]?.text;
 
         if (geminiResponse) {
-            addMessage("Gemini", geminiResponse, "gemini");
+            broadcastMessage(geminiResponse, "Gemini", "gemini");
         } else {
-           addMessage("Gemini", "No se pudo obtener una respuesta válida", "gemini");
+            broadcastMessage("No se pudo obtener una respuesta válida", "Gemini", "gemini");
         }
     } catch (error) {
         console.error('Error al obtener respuesta de Gemini:', error);
-         addMessage("Gemini", "Error al obtener la respuesta del servidor.", "gemini");
+        broadcastMessage("Error al obtener la respuesta del servidor.", "Gemini", "gemini");
     }
 }
 
-// Enviar mensaje a todos los usuarios
-function broadcastUserMessage(message){
+
+// Función para enviar el mensaje a todos
+function broadcastMessage(message, sender, senderId) {
     connectedUsers.forEach(user => {
-        if (user !== userId){ // No mandarse el mensaje a sí mismo
-           addMessage("Usuario "+ user.substring(0, 5) + " dice:", message, "user"); // Muestra el mensaje de otros usuarios
-        }
+        // Enviar el mensaje a todos los usuarios conectados (incluyendo al que lo envió).
+        addMessage(sender === "Gemini" ? sender : "Usuario " + sender.substring(0, 5) + " dice:", message, senderId)
     });
 }
 
 
-// Función para agregar un mensaje al chat
 function addMessage(sender, message, senderId) {
     const messageElement = document.createElement('p');
-    messageElement.classList.add(senderId); // Agrega una clase para identificar quién envió el mensaje
+    messageElement.classList.add(senderId);
     messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
     chatHistory.appendChild(messageElement);
 
@@ -91,35 +107,15 @@ function addMessage(sender, message, senderId) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-
-// Función para generar un ID anónimo para cada usuario
 function generateAnonymousId() {
     return Math.random().toString(36).substring(2, 15);
 }
 
-// Función para actualizar la cantidad de usuarios conectados
 function updateUserCountDisplay() {
     userCountDisplay.textContent = connectedUsers.size;
 }
 
-// Simulacion para agregar otro usuario (simula la llegada de un nuevo usuario)
-setInterval(() => {
-    let newUserId = generateAnonymousId();
-    connectedUsers.add(newUserId);
-    updateUserCountDisplay();
-    console.log("nuevo usuario conectado: " + newUserId)
-}, 20000);
 
-// Simulacion para simular la desconección de un usuario
-setInterval(() => {
-    if (connectedUsers.size > 0) {
-        let userToRemove = null;
-        connectedUsers.forEach(user => {
-          userToRemove = user
-            return;
-        })
-        connectedUsers.delete(userToRemove);
-        updateUserCountDisplay();
-        console.log("usuario desconectado: " + userToRemove);
-    }
-  }, 30000);
+if (connectedUsers.size > 0){
+    updateUserCountDisplay();
+}
