@@ -26,7 +26,7 @@
     const searchInput = document.getElementById('search-input');
 
     const loadingIndicator = document.getElementById('loading-indicator');
-      const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso';
+      //const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso';
     let chatHistory = [];
      let isVoiceRecognitionActive = false;
     let recognition;
@@ -131,7 +131,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Goog-Api-Key': apiKey,
+                    'X-Goog-Api-Key': 'YOUR_TRANSLATION_API_KEY', // Reemplaza con tu clave API de Google Translate
                 },
                 body: JSON.stringify({
                     q: text,
@@ -159,7 +159,20 @@
                 console.error('Error al copiar texto: ', err);
             });
     }
+    function getNextGeminiColor() {
+          // Aseguramos que el índice no exceda la longitud de la paleta
+          const color = geminiMessageColors[colorIndex % geminiMessageColors.length];
 
+          if (color === previousGeminiColor) {
+                // Incrementamos el índice y obtenemos el siguiente color si es el mismo
+                colorIndex = (colorIndex + 1) % geminiMessageColors.length;
+              return  geminiMessageColors[colorIndex % geminiMessageColors.length]
+            } else {
+                previousGeminiColor = color;
+                colorIndex++;
+              return  color;
+            }
+      }
     async function sendMessage() {
          const messageText = userInput.value.trim();
             if (!messageText) return;
@@ -178,10 +191,8 @@
 
        if(pinterestMatch){
              try {
-
-               const apiUrl = `https://api-rin-tohsaka.vercel.app/pinterest?url=${encodeURIComponent(pinterestMatch[0])}`;
+               const apiUrl = `/api/pinterest?url=${encodeURIComponent(pinterestMatch[0])}`;
               const response = await fetch(apiUrl);
-
                 if (!response.ok) {
                 throw new Error('Error al consumir la API de Pinterest');
               }
@@ -191,8 +202,6 @@
                     apiResponseMessage = new ChatMessage(`${data.message}`, false);
 
                 } else {
-                     //En caso de que la API devuelva datos, aquí se deben procesar y mostrar en el chat.
-
                     const pinterestData = {
                           image: data.image || null,
                            title: data.title || null,
@@ -218,32 +227,25 @@
         else{
             // Si no es una URL de Pinterest, sigue el flujo normal del chat con Gemini
             try {
-              const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-              const response = await fetch(url, {
+              const response = await fetch('/api/chat', { // <-- Usar ruta de la API
                   method: 'POST',
                  headers: {
                      'Content-Type': 'application/json',
-                     'x-goog-api-key': apiKey
-                  },
-                  body: JSON.stringify({
-                     contents: [{
-                         parts: [{ text: messageText }]
-                      }]
-                 }),
+                   },
+                 body: JSON.stringify({ message: messageText, language:languageSelector.value }),
               });
                if (!response.ok) {
                    const error = await response.json();
-                   const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.error.message}`, false);
+                   const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.message}`, false);
                     addMessageToChat(errorMensaje);
                     chatHistory.push(errorMensaje);
                      saveChatHistory();
                      showLoadingIndicator(false);
-                     console.error("Error al consumir el API", response.status, error.error.message);
+                     console.error("Error al consumir el API", response.status, error.message);
                       return;
                  }
                   const data = await response.json();
-                const geminiResponseText = data.candidates[0].content.parts[0].text;
-                  const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
+                 const geminiMessage = new ChatMessage(data.geminiResponse, false, data.geminiLanguage);
                    addMessageToChat(geminiMessage);
                    chatHistory.push(geminiMessage);
                     saveChatHistory();
@@ -323,37 +325,4 @@
    function applyFont(font) {
         document.body.style.fontFamily = font;
         localStorage.setItem('chatFont', font);
-    }
-    async function loadTranslations(lang) {
-        try {
-            const response = await fetch(`${lang}.json`);
-              if (!response.ok) {
-                  throw new Error(`No se pudo cargar el archivo de idioma ${lang}.json`);
-                }
-                translations = await response.json();
-                 applyTranslations();
-
-          } catch (error) {
-              console.error("Error al cargar traducciones:", error);
-          }
-      }
-    function loadSettings() {
-        const storedTheme = localStorage.getItem('chatTheme');
-         if (storedTheme) {
-            applyTheme(storedTheme);
-             themeSelector.value = storedTheme;
-         }
-         const storedFont = localStorage.getItem('chatFont');
-         if (storedFont) {
-            applyFont(storedFont);
-             fontSelector.value = storedFont;
-        }
-        const storedTranslation = localStorage.getItem('chatTranslation');
-         if (storedTranslation) {
-            translationSelector.value = storedTranslation;
-         }
-        loadTranslations(currentLanguage);
-         languageSelector.value = currentLanguage;
-    }
-      function handleSettingsChange(event) {
-         const selectedTheme = themeSelector.value
+    
