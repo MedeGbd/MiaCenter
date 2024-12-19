@@ -1,4 +1,3 @@
-const apiKey = "kPVaJ4AmXOxsd8AkDSjtFyeSstecoVVWXMmsB8oONkechiB4Bgs81CDVP"; //RECUERDA GUARDARLA EN UN .ENV
 const chatMessages = document.getElementById("chat-messages");
 const userInput = document.getElementById("user-input");
 const creatorAvatar = document.getElementById('creator-avatar');
@@ -21,36 +20,48 @@ const creatorData = {
 
 
 async function sendMessage() {
-    const message = userInput.value.trim();
-    if (message) {
-        appendMessage("user", message);
-        userInput.value = "";
-        // Enviar a la api de Gemini (función simulada por ahora)
-        const geminiResponse = await getGeminiResponse(message);
-        appendMessage("gemini", geminiResponse);
+  const message = userInput.value.trim();
+  if (message) {
+    appendMessage("user", message);
+    userInput.value = "";
+
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error del servidor:', errorData);
+             appendMessage("gemini", `Error al procesar tu mensaje`);
+            return
+        }
+
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data);
+      appendMessage("gemini", data.reply);
+    } catch (error) {
+      console.error('Error al enviar la solicitud:', error);
+    appendMessage("gemini", `Error al procesar tu mensaje`);
+
     }
+  }
 }
 
 function appendMessage(sender, message) {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
+  const messageElement = document.createElement("div");
+  messageElement.textContent = message;
 
-    if(sender === "user"){
-        messageElement.classList.add('user-message');
-    } else if(sender === "gemini"){
-        messageElement.classList.add("gemini-message");
-    }
+  if(sender === "user"){
+    messageElement.classList.add('user-message');
+  } else if(sender === "gemini"){
+    messageElement.classList.add("gemini-message");
+  }
 
-
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto scroll to bottom
-}
-
-// Simulación de llamada a la API de Gemini (reemplazar con la función real)
-async function getGeminiResponse(message) {
-    // Aquí iría el código para llamar a la API de Gemini.
-    // Por ahora, simulo una respuesta.
-    console.log(`Enviando mensaje a Gemini API: ${message}`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return  `Respuesta simulada de Gemini para: ${message}`;
+  chatMessages.appendChild(messageElement);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
