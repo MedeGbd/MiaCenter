@@ -3,22 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat con Gemini</title>
+    <title>Chat Gemini Presidencial</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-      <div class="language-selector">
-        <select id="language-select"></select>
-      </div>
-        <h1 id="chat-title">Chat con Gemini</h1>
-        <div id="chat-container">
-            <div id="chat-history"></div>
-            <div class="input-area">
-              <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
-              <button id="send-button">Enviar</button>
-            </div>
-          <div id="loading-indicator" class="loading-indicator"></div>
+    <div class="chat-console">
+        <div class="chat-container" id="chat-container">
+            <!-- Los mensajes se agregarán aquí -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+            <button id="send-button">Enviar</button>
         </div>
     </div>
     <script src="script.js"></script>
