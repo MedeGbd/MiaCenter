@@ -22,7 +22,7 @@ body {
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-    border: 2px solid #007bff; /* Borde para el chat */
+    border: 2px solid #007bff;
     border-radius: 8px;
 }
 
@@ -34,15 +34,14 @@ body {
 }
 
 #chat-history p {
-    margin-bottom: 10px; /* Espacio entre mensajes */
+    margin-bottom: 10px;
 }
 
 #chat-history hr {
     border: 0;
-    border-top: 1px solid #eee; /* Línea divisora */
+    border-top: 1px solid #eee;
     margin: 5px 0;
 }
-
 
 #user-input {
     padding: 8px;
@@ -59,4 +58,10 @@ body {
     border-radius: 4px;
     cursor: pointer;
     align-self: flex-end;
+}
+
+#user-count-container {
+  margin-top: 20px;
+  text-align: left;
+  padding: 10px;
 }
