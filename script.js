@@ -1,64 +1,68 @@
-const apiKey = 'AIzaSyCROBmKaRKNo7rhxJIOTSiXVGLb5YVmXD4'; // Reemplaza con tu API Key real
-const chatContainer = document.getElementById('chat-container');
-const userInput = document.getElementById('user-input');
-const sendButton = document.getElementById('send-button');
+ const API_KEY = "AIzaSyCO3FjWv0dweKSrA63aAluOLElhpoCCQdQ"; // <-- ¡CLAVE API INCLUIDA DIRECTAMENTE!
+ const userInput = document.getElementById('user-input');
+ const sendButton = document.getElementById('send-button');
+ const chatHistory = document.getElementById('chat-history');
 
-function addMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', type);
-    messageDiv.textContent = message;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll
-}
+ sendButton.addEventListener('click', sendMessage);
+ userInput.addEventListener('keydown', (event) => {
+     if (event.key === 'Enter') {
+         sendMessage();
+     }
+ });
 
-async function sendMessage(message) {
-    addMessage(message, 'user-message');
+
+async function sendMessage() {
+    const message = userInput.value.trim();
+    if (message === "") return;
+
+    // Mostrar la pregunta del usuario
+    addMessage("Tú", message, "user-message");
+    userInput.value = "";
+     
     try {
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+      // Realizar la llamada a la API de Gemini
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+               'Content-Type': 'application/json',
+               'x-goog-api-key': API_KEY
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: message }]
-                }],
-            }),
+                contents: [{ parts: [{ text: message }] }]
+            })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Error de la API:', response.status, errorData);
-            addMessage(`Error de la API: ${response.status} - ${errorData.error?.message || 'Detalles no disponibles'}`, 'gemini-message');
-            return;
+
+      if (!response.ok) {
+         throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
-          
-          if(data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-              const geminiResponse = data.candidates[0].content.parts[0].text;
-             addMessage(geminiResponse, 'gemini-message');
-            } else {
-               addMessage("Error: Respuesta de Gemini sin texto.", 'gemini-message');
-           }
+        const geminiResponse = data.candidates[0]?.content?.parts[0]?.text;
+
+        if (geminiResponse) {
+          // Mostrar la respuesta de Gemini
+             addMessage("Gemini", geminiResponse, "gemini-message");
+        } else {
+          addMessage("Gemini", "No se pudo obtener una respuesta válida", "gemini-message");
+         }
+
     } catch (error) {
-        console.error('Error al enviar el mensaje:', error);
-        addMessage("Error al conectar con Gemini o problema interno.", 'gemini-message');
-    }
+        console.error('Error al obtener respuesta de Gemini:', error);
+        addMessage("Gemini", "Error al obtener la respuesta del servidor.", "gemini-message");
+     }
+ }
+
+
+
+function addMessage(sender, message, type) {
+   const messageElement = document.createElement('p');
+   messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    messageElement.classList.add(type); // Añade la clase específica al mensaje
+    chatHistory.appendChild(messageElement);
+
+    // Agregar línea divisora después de cada mensaje
+    const hr = document.createElement('hr');
+   chatHistory.appendChild(hr);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 }
-
-function handleSendMessage() {
-    const message = userInput.value.trim();
-    if (message) {
-        sendMessage(message);
-        userInput.value = '';
-    }
-}
-
-sendButton.addEventListener('click', handleSendMessage);
-
-userInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        handleSendMessage();
-    }
-});
