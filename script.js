@@ -32,6 +32,21 @@
     let recognition;
     let translations = {};
     let currentLanguage = localStorage.getItem('chatLanguage') || 'es';
+     // Paleta de colores predefinidos para los mensajes de Gemini
+ const geminiMessageColors = [
+    '#34495e', // Azul oscuro
+    '#27ae60', // Verde esmeralda
+    '#f39c12', // Naranja
+    '#9b59b6',  // Morado
+    '#e74c3c', // Rojo
+    '#1abc9c', // Turquesa
+    '#3498db',  // Azul
+    '#f1c40f',  // Amarillo
+    '#d35400', // Naranja oscuro
+     '#c0392b' // Rojo oscuro
+   ];
+  let colorIndex = 0; // Índice para recorrer la paleta de colores
+  let previousGeminiColor = null; // Último color usado para Gemini
     function showLoadingIndicator(show) {
         loadingIndicator.style.display = show ? 'block' : 'none';
     }
@@ -93,8 +108,10 @@
         }
          else {
 
-            messageDiv.classList.add('gemini-message');
-             messageDiv.classList.add('gemini-message-color');
+             messageDiv.classList.add('gemini-message');
+             // Obtener el color para este mensaje de Gemini
+             let geminiColor = getNextGeminiColor();
+             messageDiv.style.backgroundColor = geminiColor;
               let translatedText = message.text;
                  if (translationSelector.value === 'enabled' && message.language !== languageSelector.value ) {
                      translateText(message.text, message.language, languageSelector.value).then(translation => {
@@ -284,7 +301,7 @@
             loadChatInput.value ='';
 
         }
-        function searchChat(searchTerm){
+       function searchChat(searchTerm){
              const messages = chatMessagesDiv.querySelectorAll('.message, .pinterest-message');
              messages.forEach(message =>{
                  const messageText = message.textContent;
@@ -339,103 +356,4 @@
          languageSelector.value = currentLanguage;
     }
       function handleSettingsChange(event) {
-         const selectedTheme = themeSelector.value;
-       const selectedFont = fontSelector.value;
-          const selectedTranslation = translationSelector.value;
-      if (event.target.id === 'theme-selector'){
-           applyTheme(selectedTheme);
-       }
-       if (event.target.id === 'font-selector'){
-           applyFont(selectedFont);
-      }
-        if (event.target.id === 'translation-selector'){
-              localStorage.setItem('chatTranslation', selectedTranslation);
-             chatHistory.forEach(message => addMessageToChat(message));
-         }
-     }
-   function startVoiceRecognition() {
-      if ('webkitSpeechRecognition' in window) {
-          recognition = new webkitSpeechRecognition();
-      } else if ('SpeechRecognition' in window) {
-          recognition = new SpeechRecognition();
-      }
-        if(recognition)
-        {
-             recognition.lang = languageSelector.value;
-           recognition.continuous = false;
-            recognition.interimResults = false;
-
-           recognition.onstart = () => {
-               isVoiceRecognitionActive = true;
-             voiceButton.classList.add('active');
-               voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-               console.log('Reconocimiento de voz iniciado.');
-
-           };
-            recognition.onresult = (event) => {
-                 const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                 sendMessage();
-              stopVoiceRecognition();
-            };
-           recognition.onerror = (event) => {
-              stopVoiceRecognition();
-             console.error('Error en el reconocimiento de voz:', event.error);
-           };
-             recognition.onend = () => {
-                 if(isVoiceRecognitionActive) {
-                     stopVoiceRecognition();
-                 }
-          };
-         recognition.start();
-        } else{
-            alert('La API de Reconocimiento de Voz no es compatible en este navegador.');
-        }
-   }
-  function stopVoiceRecognition() {
-        if(recognition) {
-            recognition.stop();
-              voiceButton.classList.remove('active');
-            voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
-        }
-          isVoiceRecognitionActive = false;
-      }
-    async function handleLanguageChange() {
-        currentLanguage = languageSelector.value;
-       localStorage.setItem('chatLanguage', currentLanguage);
-         await loadTranslations(currentLanguage);
-        chatHistory.forEach(message => addMessageToChat(message));
-          if(recognition){
-              recognition.lang = currentLanguage;
-         }
-    }
-
-    clearChatButton.addEventListener('click', clearChat);
-      saveChatButton.addEventListener('click', saveChat);
-      loadChatInput.addEventListener('change', loadChat);
-    loadChatButton.addEventListener('click', () => loadChatInput.click());
-    sendButton.addEventListener('click', sendMessage);
-    settingsButton.addEventListener('click', toggleSettingsModal);
-     closeSettingsModal.addEventListener('click', toggleSettingsModal);
-    themeSelector.addEventListener('change', handleSettingsChange);
-     fontSelector.addEventListener('change', handleSettingsChange);
-     translationSelector.addEventListener('change', handleSettingsChange);
-     voiceButton.addEventListener('click',  () => {
-        if (!isVoiceRecognitionActive) {
-            startVoiceRecognition();
-        } else {
-            stopVoiceRecognition();
-       }
-
-   });
-       searchInput.addEventListener('input', (event) => {
-           searchChat(event.target.value);
-        });
-    userInput.addEventListener('keypress', function(event) {
-       if (event.key === 'Enter') {
-          sendMessage();
-        }
-    });
-  languageSelector.addEventListener('change', handleLanguageChange);
-   loadChatHistory();
-    loadSettings();
+         const selectedTheme = themeSelector.value
