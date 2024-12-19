@@ -1,4 +1,4 @@
-class ChatMessage {
+    class ChatMessage {
         constructor(text, isUser, language = 'es') {
             this.text = text;
             this.isUser = isUser;
@@ -120,8 +120,7 @@ class ChatMessage {
     async function sendMessage() {
          const messageText = userInput.value.trim();
             if (!messageText) return;
-
-            const userMessage = new ChatMessage(messageText, true, languageSelector.value);
+                const userMessage = new ChatMessage(messageText, true, languageSelector.value);
             addMessageToChat(userMessage);
             chatHistory.push(userMessage);
              saveChatHistory();
@@ -167,6 +166,7 @@ class ChatMessage {
            console.error("Error inesperado:", error);
 
         }
+
     }
       function clearChat() {
             chatMessagesDiv.innerHTML = '';
@@ -336,32 +336,4 @@ class ChatMessage {
          }
     }
 
-    clearChatButton.addEventListener('click', clearChat);
-      saveChatButton.addEventListener('click', saveChat);
-      loadChatInput.addEventListener('change', loadChat);
-    loadChatButton.addEventListener('click', () => loadChatInput.click());
-    sendButton.addEventListener('click', sendMessage);
-    settingsButton.addEventListener('click', toggleSettingsModal);
-     closeSettingsModal.addEventListener('click', toggleSettingsModal);
-    themeSelector.addEventListener('change', handleSettingsChange);
-     fontSelector.addEventListener('change', handleSettingsChange);
-     translationSelector.addEventListener('change', handleSettingsChange);
-     voiceButton.addEventListener('click',  () => {
-        if (!isVoiceRecognitionActive) {
-            startVoiceRecognition();
-        } else {
-            stopVoiceRecognition();
-       }
-
-   });
-       searchInput.addEventListener('input', (event) => {
-           searchChat(event.target.value);
-        });
-    userInput.addEventListener('keypress', function(event) {
-       if (event.key === 'Enter') {
-          sendMessage();
-        }
-    });
-  languageSelector.addEventListener('change', handleLanguageChange);
-   loadChatHistory();
-    loadSettings();
+    clearChatButton.addEventListener('click',
