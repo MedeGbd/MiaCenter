@@ -3,12 +3,14 @@ const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistory = document.getElementById('chat-history');
 
+
 sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         sendMessage();
     }
 });
+
 
 async function sendMessage() {
     const message = userInput.value.trim();
