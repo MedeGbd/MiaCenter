@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Gemini Presidencial</title>
+    <title>Chat con Gemini</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="chat-console">
-        <div class="chat-container" id="chat-container">
-            <!-- Los mensajes se agregarán aquí -->
-        </div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+    <div class="container">
+        <h1>Chat con Gemini</h1>
+        <div id="chat-container">
+            <div id="chat-history"></div>
+            <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
             <button id="send-button">Enviar</button>
         </div>
     </div>
