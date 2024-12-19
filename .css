@@ -31,29 +31,16 @@ body {
     height: 300px;
     overflow-y: scroll;
     margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
 }
 
-.message-container {
-    margin-bottom: 10px;
-    padding: 8px;
-    border-radius: 8px;
-    max-width: 70%;
+#chat-history p {
+    margin-bottom: 10px; /* Espacio entre mensajes */
 }
 
-.user-message {
-    background-color: #e0f7fa; /* light blue */
-    align-self: flex-end;
-}
-
-.bot-message {
-    background-color: #f0f0f0; /* light gray */
-    align-self: flex-start;
-}
-
-.message-container p {
-  margin:0;
+#chat-history hr {
+    border: 0;
+    border-top: 1px solid #eee; /* Línea divisora */
+    margin: 5px 0;
 }
 
 
