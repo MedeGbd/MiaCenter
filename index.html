@@ -1,33 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat con Gemini - Versión Presidencial</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <title data-i18n="chatTitle">Chat Gemini Oficial - Edición Global Funcional</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" integrity="sha512-Cv93isQdFwaKBV+Z4oyl8ZXuKzxg+B1cRzQvEmnKKSXvJQuXo8jF6M2K0GBI00JgZzW/H97K15zQ6Hv7h2z+g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+</head>
 <body>
-    <div class="container">
-        <h1>Chat con Gemini - Versión Presidencial</h1>
-        <div class="user-settings">
-            <input type="text" id="user-name-input" placeholder="Escribe tu nombre, ciudadano">
-            <button id="set-name-button">Establecer Nombre</button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1 class="chat-title" data-i18n="chatTitle">Chat Gemini Oficial</h1>
+            <div class="chat-settings">
+                <button class="settings-button"  aria-label="Abrir Configuración"><i class="fas fa-cog"></i></button>
+            </div>
+                <div class="chat-actions">
+                 <button class="save-chat-button" data-i18n="saveChatButton" aria-label="Guardar Chat">
+                     <i class="fas fa-save"></i>
+                    </button>
+                 <input type="file" id="load-chat-input" style="display:none" accept=".json" aria-label="Cargar Chat"/>
+                 <button class="load-chat-button" data-i18n="loadChatButton" aria-label="Cargar Chat">
+                      <i class="fas fa-upload"></i>
+                    </button>
+                 <button class="clear-chat-button" data-i18n="clearChatButton" aria-label="Limpiar Chat">
+                    <i class="fas fa-trash"></i>
+                </button>
+                </div>
         </div>
-        <div id="chat-container">
-            <div id="chat-history"></div>
-            <div id="chat-input-area">
-                <input type="text" id="user-input" placeholder="Escribe tu pregunta para Gemini...">
-                <button id="send-button">Enviar</button>
+         <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar en el chat..." aria-label="Buscar en el chat"/>
+        </div>
+          <div class="chat-messages" id="chat-messages" aria-live="polite">
+              <div class="loading-indicator" id="loading-indicator" style="display: none;" data-i18n="loadingIndicator">
+                <i class="fas fa-spinner fa-spin"></i> Gemini está escribiendo...
             </div>
         </div>
-        <div id="user-count-container">
-            <p>Ciudadanos conectados: <span id="user-count">0</span></p>
-            <ul id="user-list"></ul>
+
+        <div class="chat-input-area">
+           <div class="input-container">
+              <button class="voice-button" id="voice-button" data-i18n="sendByVoice"  aria-label="Enviar por Voz"><i class="fas fa-microphone"></i></button>
+              <input type="text" id="user-input" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje" data-i18n="inputPlaceholder"/>
+               <div class="language-selector">
+                   <select id="language-selector"  aria-label="Seleccionar Idioma" >
+                     <option value="es" data-lang="es" > <i class="flag-icon flag-icon-es"></i> Español</option>
+                       <option value="en"  data-lang="en"  > <i class="flag-icon flag-icon-gb"></i> Inglés</option>
+                      <option value="fr" data-lang="fr" > <i class="flag-icon flag-icon-fr"></i> Francés</option>
+                    <option value="de"  data-lang="de" ><i class="flag-icon flag-icon-de"></i> Alemán</option>
+                       </select>
+                </div>
+              <button id="send-button" aria-label="Enviar Mensaje" data-i18n="sendButton">
+                   <i class="fas fa-paper-plane"></i> Enviar
+               </button>
+            </div>
         </div>
-    </div>
+
+
+    <!-- Modal de Configuración -->
+    <div class="settings-modal" id="settings-modal">
+            <div class="modal-content">
+                 <span class="close-button" id="close-settings-modal" aria-label="Cerrar Configuración">×</span>
+                <h2 data-i18n="settingsTitle">Configuración</h2>
+                <div class="settings-options">
+                    <div>
+                       <label for="theme-selector" data-i18n="themeLabel">Tema:</label>
+                          <select id="theme-selector" aria-label="Seleccionar tema">
+                             <option value="dark" data-i18n="themeDark">Oscuro</option>
+                             <option value="light" data-i18n="themeLight">Claro</option>
+                         </select>
+                    </div>
+                    <div>
+                       <label for="font-selector" data-i18n="fontLabel">Fuente:</label>
+                          <select id="font-selector" aria-label="Seleccionar fuente">
+                             <option value="Arial">Arial</option>
+                             <option value="Roboto">Roboto</option>
+                             <option value="Open Sans">Open Sans</option>
+                        </select>
+                     </div>
+                    <div>
+                       <label for="translation-selector" data-i18n="translationLabel">Traducción:</label>
+                        <select id="translation-selector" aria-label="Seleccionar traducción">
+                            <option value="disabled" data-i18n="translationDisabled">Desactivado</option>
+                            <option value="enabled" data-i18n="translationEnabled">Activado</option>
+                        </select>
+                      </div>
+                </div>
+           </div>
+        </div>
+  </div>
     <script src="script.js"></script>
 </body>
-
 </html>
