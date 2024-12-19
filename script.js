@@ -4,31 +4,39 @@ const sendButton = document.getElementById('send-button');
 const chatHistory = document.getElementById('chat-history');
 const userCountDisplay = document.getElementById('user-count');
 
-let connectedUsers = new Set();
-let userId = generateAnonymousId();
+const socket = new WebSocket('ws://localhost:3000'); // Conecta al servidor WebSocket
 
+let userId;
 
-function getStoredUsers() {
-    const storedUsers = localStorage.getItem('connectedUsers');
-    return storedUsers ? new Set(JSON.parse(storedUsers)) : new Set();
-}
+socket.onopen = () => {
+    console.log('Conectado al servidor WebSocket');
+};
 
-function storeUsers(users) {
-    localStorage.setItem('connectedUsers', JSON.stringify(Array.from(users)));
-}
+socket.onmessage = event => {
+    try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chat') {
+            addMessage("Usuario " + data.sender.substring(0, 5) + " dice:", data.message, "user");
+        } else if (data.type === 'gemini') {
+            addMessage("Gemini", data.message, "gemini");
+        } else if (data.type === 'userList') {
+            updateUserCountDisplay(data.users.length);
+            if (!userId) {
+                userId = data.users.find(user => user !== userId);
+            }
+        }
+    } catch (error) {
+        console.error('Error al procesar el mensaje del servidor:', error);
+    }
+};
 
-function updateUserList(){
-    connectedUsers = getStoredUsers();
-    connectedUsers.add(userId);
-    storeUsers(connectedUsers);
-    updateUserCountDisplay();
-}
+socket.onerror = error => {
+    console.error('Error en la conexión WebSocket:', error);
+};
 
-updateUserList();
-window.addEventListener('beforeunload', () => {
-    connectedUsers.delete(userId);
-    storeUsers(connectedUsers);
-});
+socket.onclose = () => {
+    console.log('Desconectado del servidor WebSocket');
+};
 
 sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keydown', (event) => {
@@ -37,24 +45,19 @@ userInput.addEventListener('keydown', (event) => {
     }
 });
 
-// Función para enviar el mensaje
 async function sendMessage() {
     const message = userInput.value.trim();
     if (message === "") return;
-    
-     // Determinar si el mensaje es para Gemini o usuarios
-     if (message.startsWith("/")) {
-        processGeminiMessage(message.substring(1));
-     }
-    else{
-        broadcastMessage(message, userId); // Enviar el mensaje a todos
-    }
 
+    if (message.startsWith("/")) {
+        processGeminiMessage(message.substring(1));
+    } else {
+        socket.send(JSON.stringify({ type: 'chat', message: message }));
+    }
     userInput.value = "";
 }
 
-//Procesar Mensaje a Geminis
-async function processGeminiMessage(message){
+async function processGeminiMessage(message) {
     try {
         const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
             method: 'POST',
@@ -75,25 +78,15 @@ async function processGeminiMessage(message){
         const geminiResponse = data.candidates[0]?.content?.parts[0]?.text;
 
         if (geminiResponse) {
-            broadcastMessage(geminiResponse, "Gemini", "gemini");
+            socket.send(JSON.stringify({ type: 'gemini', message: geminiResponse }));
         } else {
-            broadcastMessage("No se pudo obtener una respuesta válida", "Gemini", "gemini");
+            socket.send(JSON.stringify({ type: 'gemini', message: "No se pudo obtener una respuesta válida" }));
         }
     } catch (error) {
         console.error('Error al obtener respuesta de Gemini:', error);
-        broadcastMessage("Error al obtener la respuesta del servidor.", "Gemini", "gemini");
+        socket.send(JSON.stringify({ type: 'gemini', message: "Error al obtener la respuesta del servidor." }));
     }
 }
-
-
-// Función para enviar el mensaje a todos
-function broadcastMessage(message, sender, senderId) {
-    connectedUsers.forEach(user => {
-        // Enviar el mensaje a todos los usuarios conectados (incluyendo al que lo envió).
-        addMessage(sender === "Gemini" ? sender : "Usuario " + sender.substring(0, 5) + " dice:", message, senderId)
-    });
-}
-
 
 function addMessage(sender, message, senderId) {
     const messageElement = document.createElement('p');
@@ -107,15 +100,6 @@ function addMessage(sender, message, senderId) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-function generateAnonymousId() {
-    return Math.random().toString(36).substring(2, 15);
-}
-
-function updateUserCountDisplay() {
-    userCountDisplay.textContent = connectedUsers.size;
-}
-
-
-if (connectedUsers.size > 0){
-    updateUserCountDisplay();
+function updateUserCountDisplay(count) {
+    userCountDisplay.textContent = count;
 }
