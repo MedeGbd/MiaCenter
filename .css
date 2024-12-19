@@ -304,3 +304,18 @@ body.light-theme .settings-modal .close-button{
 .voice-button.active {
     color:#ccc;
 }
+.user-message-color {
+     background-color: #2980b9;
+}
+
+.gemini-message-color{
+    background-color: #34495e;
+}
+body.light-theme .user-message-color {
+    background-color: #e1f5fe;
+    color: #333;
+}
+body.light-theme .gemini-message-color{
+    background-color: #f0f0f0;
+    color: #333;
+}
