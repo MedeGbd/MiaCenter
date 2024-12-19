@@ -18,6 +18,10 @@ class ChatMessage {
      const languageSelector = document.getElementById('language-selector');
       const translationSelector = document.getElementById('translation-selector');
      const voiceButton = document.getElementById('voice-button');
+    const saveChatButton = document.querySelector('.save-chat-button');
+     const loadChatButton = document.querySelector('.load-chat-button');
+     const loadChatInput = document.getElementById('load-chat-input');
+    const searchInput = document.getElementById('search-input');
 
     const loadingIndicator = document.getElementById('loading-indicator');
       const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso';
@@ -41,7 +45,7 @@ class ChatMessage {
     function saveChatHistory() {
        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
    }
-   function applyTranslations() {
+    function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(element => {
        const key = element.getAttribute('data-i18n');
         if (translations[key]) {
@@ -50,6 +54,9 @@ class ChatMessage {
        if(key === 'inputPlaceholder'){
            element.placeholder =  translations[key];
       }
+       if (key === 'searchPlaceholder'){
+            searchInput.placeholder = translations[key];
+        }
    });
 }
     function addMessageToChat(message) {
@@ -57,11 +64,11 @@ class ChatMessage {
          messageDiv.classList.add('message');
         if (message.isUser) {
             messageDiv.classList.add('user-message');
-            messageDiv.classList.add('user-message-color');
+              messageDiv.classList.add('user-message-color');
              messageDiv.innerHTML = message.text;
         } else {
             messageDiv.classList.add('gemini-message');
-              messageDiv.classList.add('gemini-message-color');
+             messageDiv.classList.add('gemini-message-color');
               let translatedText = message.text;
                  if (translationSelector.value === 'enabled' && message.language !== languageSelector.value ) {
                      translateText(message.text, message.language, languageSelector.value).then(translation => {
@@ -165,6 +172,52 @@ class ChatMessage {
             chatMessagesDiv.innerHTML = '';
              chatHistory = [];
            localStorage.removeItem('chatHistory');
+        }
+        function saveChat() {
+            const chatData = JSON.stringify(chatHistory);
+            const blob = new Blob([chatData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+             const a = document.createElement('a');
+           a.href = url;
+          a.download = 'chat_history.json';
+           document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+        }
+        function loadChat(event) {
+            const file = event.target.files[0];
+              if(!file) return;
+               const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                     const loadedHistory = JSON.parse(e.target.result);
+                      if (Array.isArray(loadedHistory)) {
+                          chatHistory = loadedHistory;
+                           chatMessagesDiv.innerHTML = '';
+                        chatHistory.forEach(message => addMessageToChat(message));
+                        saveChatHistory();
+                      } else{
+                          alert("Formato del archivo no es valido")
+                     }
+
+               }catch (error) {
+                      alert("Error al cargar el chat:" + error.message);
+              }
+           };
+         reader.readAsText(file);
+            loadChatInput.value ='';
+
+        }
+        function searchChat(searchTerm){
+            const messages = chatMessagesDiv.querySelectorAll('.message');
+             messages.forEach(message =>{
+                 const messageText = message.textContent;
+                  const regex = new RegExp(searchTerm, 'gi');
+                   const highlightedText = messageText.replace(regex, '<span class="highlight">$&</span>');
+                    message.innerHTML = highlightedText;
+            });
         }
     function toggleSettingsModal() {
         settingsModal.style.display = settingsModal.style.display === 'none' ? 'block' : 'none';
@@ -284,6 +337,9 @@ class ChatMessage {
     }
 
     clearChatButton.addEventListener('click', clearChat);
+      saveChatButton.addEventListener('click', saveChat);
+      loadChatInput.addEventListener('change', loadChat);
+    loadChatButton.addEventListener('click', () => loadChatInput.click());
     sendButton.addEventListener('click', sendMessage);
     settingsButton.addEventListener('click', toggleSettingsModal);
      closeSettingsModal.addEventListener('click', toggleSettingsModal);
@@ -298,6 +354,9 @@ class ChatMessage {
        }
 
    });
+       searchInput.addEventListener('input', (event) => {
+           searchChat(event.target.value);
+        });
     userInput.addEventListener('keypress', function(event) {
        if (event.key === 'Enter') {
           sendMessage();
