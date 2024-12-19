@@ -8,11 +8,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Chat con Gemini</h1>
+        <div class="language-selector">
+           <select id="language-select">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <h1 id="chat-title">Chat con Gemini</h1>
         <div id="chat-container">
             <div id="chat-history"></div>
-            <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
-            <button id="send-button">Enviar</button>
+            <div class="input-area">
+              <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
+              <button id="send-button">Enviar</button>
+            </div>
+          <div id="loading-indicator" class="loading-indicator"></div>
         </div>
     </div>
     <script src="script.js"></script>
