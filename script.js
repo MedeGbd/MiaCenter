@@ -20,41 +20,52 @@ async function sendMessage(message) {
       }),
     });
 
-    const data = await response.json();
-      
-      if(data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-        const geminiResponse = data.candidates[0].content.parts[0].text;
-        addMessage(geminiResponse, 'gemini-message');
-      } else {
-          addMessage("Error al obtener respuesta de Gemini.", 'gemini-message');
-      }
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error de la API:', response.status, errorData);
+        addMessage(`Error de la API: ${response.status} - ${errorData.error?.message || 'Detalles no disponibles'}`, 'gemini-message');
+        return;
+    }
 
-    
+
+    const data = await response.json();
+
+
+    if(data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+      const geminiResponse = data.candidates[0].content.parts[0].text;
+      addMessage(geminiResponse, 'gemini-message');
+    } else {
+      addMessage("Error: Respuesta de Gemini sin texto.", 'gemini-message');
+    }
+
+
   } catch (error) {
     console.error('Error al enviar el mensaje:', error);
-      addMessage("Error al conectar con Gemini.", 'gemini-message');
+    addMessage("Error al conectar con Gemini.", 'gemini-message');
   }
 }
 
 
 function addMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', type);
-    messageDiv.textContent = message;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', type);
+  messageDiv.textContent = message;
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll
 }
+
 
 sendButton.addEventListener('click', () => {
   const message = userInput.value.trim();
-    if (message) {
-        sendMessage(message);
-        userInput.value = '';
-    }
+  if (message) {
+    sendMessage(message);
+    userInput.value = '';
+  }
 });
 
+
 userInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        sendButton.click();
-    }
+  if (event.key === 'Enter') {
+    sendButton.click();
+  }
 });
