@@ -6,23 +6,26 @@ const loadingIndicator = document.getElementById('loading-indicator');
 const languageSelect = document.getElementById('language-select');
 const chatTitle = document.getElementById('chat-title');
 let translations = {};
+let availableLanguages = {}; // Objecto para almacenar los idiomas disponibles
+
 
 // Cargar el idioma seleccionado
 async function loadLanguage(languageCode) {
     try {
         const response = await fetch(`${languageCode}.json`);
         if (!response.ok) {
-            throw new Error(`Failed to load language file: ${languageCode}.json`);
+           translations =  availableLanguages['en']; // Cargar traducciones por defecto a ingles
+           throw new Error(`Failed to load language file: ${languageCode}.json`);
         }
         translations = await response.json();
         updateUI(); // Actualizar la interfaz con los textos traducidos
     } catch (error) {
         console.error('Error loading language:', error);
-        translations = {}; // Resetear a un objecto vacio para no romper la aplicación
-        updateUI(); // Actualizar la interfaz con los textos por defecto
-
+        updateUI();// Actualizar la interfaz con los textos por defecto
     }
 }
+
+
 function getTranslation(key) {
     return translations[key] || key; // Devolver la traducción o la key si no se encuentra
 }
@@ -39,6 +42,7 @@ userInput.addEventListener('keydown', (event) => {
         sendMessage();
     }
 });
+
 
 async function sendMessage() {
     const message = userInput.value.trim();
@@ -75,11 +79,10 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Error al obtener respuesta de Gemini:', error);
-        addMessage(getTranslation('gemini'), getTranslation('serverError'), 'gemini-message');
+         addMessage(getTranslation('gemini'), getTranslation('serverError'), 'gemini-message');
     } finally {
         loadingIndicator.style.display = 'none';
     }
-
 }
 
 function addMessage(sender, message, cssClass) {
@@ -93,8 +96,45 @@ function addMessage(sender, message, cssClass) {
 
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
-// Cargar el idioma inicial
-loadLanguage(languageSelect.value);
+
+
+// Cargar todos los idiomas disponibles
+async function loadAvailableLanguages() {
+  try {
+    const response = await fetch("traducciones_base.json");
+    if (!response.ok) {
+      throw new Error("Failed to load base translations");
+    }
+    const baseTranslations = await response.json();
+
+    for (const lang in baseTranslations) {
+      if (baseTranslations.hasOwnProperty(lang)) {
+        availableLanguages[lang] = baseTranslations[lang];
+      }
+    }
+    populateLanguageSelector();
+
+    loadLanguage(languageSelect.value);
+
+
+  } catch (error) {
+    console.error("Error loading translations", error);
+  }
+}
+
+// Función para llenar el select de idiomas
+function populateLanguageSelector() {
+    languageSelect.innerHTML = '';
+    for (const lang in availableLanguages) {
+        if (availableLanguages.hasOwnProperty(lang)) {
+            const option = document.createElement('option');
+            option.value = lang;
+            option.textContent = availableLanguages[lang].languageName || lang;
+            languageSelect.appendChild(option);
+        }
+    }
+}
+loadAvailableLanguages();
 languageSelect.addEventListener('change', () => {
     loadLanguage(languageSelect.value);
 });
