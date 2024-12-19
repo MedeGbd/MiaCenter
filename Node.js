@@ -1,29 +1,34 @@
 const WebSocket = require('ws');
 const http = require('http');
+const { v4: uuidv4 } = require('uuid');
 
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
-const connectedUsers = new Set();
+const connectedUsers = new Map();
+const userNames = new Map();
 
 wss.on('connection', ws => {
-    const userId = generateAnonymousId();
-    connectedUsers.add(userId);
+    const userId = uuidv4();
+    connectedUsers.set(userId, ws);
+    userNames.set(userId, `Usuario ${connectedUsers.size}`);
+
     console.log(`Usuario conectado: ${userId}`);
-
-    // Enviar la lista de usuarios al nuevo usuario
-    ws.send(JSON.stringify({ type: 'userList', users: Array.from(connectedUsers) }));
-
-    // Enviar la lista de usuarios a todos los usuarios
-    broadcast({ type: 'userList', users: Array.from(connectedUsers) }, userId);
+    ws.send(JSON.stringify({ type: 'userId', userId: userId }));
+    broadcastUserList();
 
     ws.on('message', message => {
         try {
             const parsedMessage = JSON.parse(message);
             if (parsedMessage.type === 'chat') {
-                broadcast({ type: 'chat', message: parsedMessage.message, sender: userId }, userId);
+                const { message, sender, userName } = parsedMessage;
+                broadcast({ type: 'chat', message, sender, userName: userNames.get(sender) }, userId);
             } else if (parsedMessage.type === 'gemini') {
-                broadcast({ type: 'gemini', message: parsedMessage.message, sender: userId }, userId);
+                const { message, sender, userName } = parsedMessage;
+                broadcast({ type: 'gemini', message, sender, userName: userNames.get(sender) }, userId);
+            } else if (parsedMessage.type === 'userName') {
+                userNames.set(userId, parsedMessage.userName);
+                broadcastUserList();
             }
         } catch (error) {
             console.error('Error al procesar el mensaje:', error);
@@ -32,8 +37,9 @@ wss.on('connection', ws => {
 
     ws.on('close', () => {
         connectedUsers.delete(userId);
+        userNames.delete(userId);
         console.log(`Usuario desconectado: ${userId}`);
-        broadcast({ type: 'userList', users: Array.from(connectedUsers) }, userId);
+        broadcastUserList();
     });
 
     ws.on('error', error => {
@@ -42,15 +48,21 @@ wss.on('connection', ws => {
 });
 
 function broadcast(data, senderId) {
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
+    connectedUsers.forEach((client, id) => {
+         if (client.readyState === WebSocket.OPEN) {
+             if (id === senderId) {
+               data.isMe = true
+            } else {
+                 data.isMe = false
+            }
             client.send(JSON.stringify(data));
         }
     });
 }
 
-function generateAnonymousId() {
-    return Math.random().toString(36).substring(2, 15);
+function broadcastUserList() {
+    const userList = Array.from(userNames.entries()).map(([id, name]) => ({ id, name }));
+    broadcast({ type: 'userList', users: userList });
 }
 
 const PORT = process.env.PORT || 3000;
