@@ -18,10 +18,18 @@ body {
     text-align: center;
 }
 
+.user-settings {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+
 #chat-container {
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
+    margin-top: 10px;
     border: 2px solid #007bff;
     border-radius: 8px;
 }
@@ -35,6 +43,19 @@ body {
 
 #chat-history p {
     margin-bottom: 10px;
+    text-align: left;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#chat-history p.user {
+    background-color: #e8f5e9;
+    align-self: flex-start;
+}
+
+#chat-history p.gemini {
+    background-color: #e3f2fd;
+    align-self: flex-end;
 }
 
 #chat-history hr {
@@ -64,4 +85,17 @@ body {
   margin-top: 20px;
   text-align: left;
   padding: 10px;
+}
+
+#user-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 5px;
+}
+
+#user-list li {
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    margin: 3px 0;
+    border-radius: 5px;
 }
