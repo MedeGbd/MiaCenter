@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="chatTitle">Chat Medelin Gemini Oficial - Edición Global Funcional</title>
+    <title data-i18n="chatTitle">Chat Gemini Oficial - Edición Global Funcional</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" integrity="sha512-Cv93isQdFwaKBV+Z4oyl8ZXuKzxg+B1cRzQvEmnKKSXvJQuXo8jF6M2K0GBI00JgZzW/H97K15zQ6Hv7h2z+g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -16,9 +16,21 @@
             <div class="chat-settings">
                 <button class="settings-button"  aria-label="Abrir Configuración"><i class="fas fa-cog"></i></button>
             </div>
-               <button class="clear-chat-button" data-i18n="clearChatButton" aria-label="Limpiar Chat">
-                    <i class="fas fa-trash"></i> Limpiar Chat
+                <div class="chat-actions">
+                 <button class="save-chat-button" data-i18n="saveChatButton" aria-label="Guardar Chat">
+                     <i class="fas fa-save"></i>
+                    </button>
+                 <input type="file" id="load-chat-input" style="display:none" accept=".json" aria-label="Cargar Chat"/>
+                 <button class="load-chat-button" data-i18n="loadChatButton" aria-label="Cargar Chat">
+                      <i class="fas fa-upload"></i>
+                    </button>
+                 <button class="clear-chat-button" data-i18n="clearChatButton" aria-label="Limpiar Chat">
+                    <i class="fas fa-trash"></i>
                 </button>
+                </div>
+        </div>
+         <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar en el chat..." aria-label="Buscar en el chat"/>
         </div>
           <div class="chat-messages" id="chat-messages" aria-live="polite">
               <div class="loading-indicator" id="loading-indicator" style="display: none;" data-i18n="loadingIndicator">
