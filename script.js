@@ -6,28 +6,36 @@ const loadingIndicator = document.getElementById('loading-indicator');
 const languageSelect = document.getElementById('language-select');
 const chatTitle = document.getElementById('chat-title');
 let translations = {};
-let availableLanguages = {}; // Objecto para almacenar los idiomas disponibles
+let availableLanguages = {};
 
 
 // Cargar el idioma seleccionado
 async function loadLanguage(languageCode) {
-    try {
-        const response = await fetch(`${languageCode}.json`);
-        if (!response.ok) {
-           translations =  availableLanguages['en']; // Cargar traducciones por defecto a ingles
-           throw new Error(`Failed to load language file: ${languageCode}.json`);
-        }
-        translations = await response.json();
-        updateUI(); // Actualizar la interfaz con los textos traducidos
+   try {
+     const response = await fetch('es.json');
+      if (!response.ok) {
+        throw new Error('Failed to load es.json');
+      }
+
+      const data = await response.json();
+      if (data[languageCode]) {
+        translations = data[languageCode];
+        updateUI();
+      } else {
+        translations = data['en'];
+        updateUI();
+          console.error(`Language code ${languageCode} not found, loading default english`);
+      }
+
+
     } catch (error) {
         console.error('Error loading language:', error);
-        updateUI();// Actualizar la interfaz con los textos por defecto
     }
 }
 
 
 function getTranslation(key) {
-    return translations[key] || key; // Devolver la traducción o la key si no se encuentra
+    return translations[key] || key;
 }
 
 function updateUI() {
@@ -42,7 +50,6 @@ userInput.addEventListener('keydown', (event) => {
         sendMessage();
     }
 });
-
 
 async function sendMessage() {
     const message = userInput.value.trim();
@@ -79,7 +86,7 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Error al obtener respuesta de Gemini:', error);
-         addMessage(getTranslation('gemini'), getTranslation('serverError'), 'gemini-message');
+          addMessage(getTranslation('gemini'), getTranslation('serverError'), 'gemini-message');
     } finally {
         loadingIndicator.style.display = 'none';
     }
@@ -101,20 +108,20 @@ function addMessage(sender, message, cssClass) {
 // Cargar todos los idiomas disponibles
 async function loadAvailableLanguages() {
   try {
-    const response = await fetch("traducciones_base.json");
+    const response = await fetch("es.json");
     if (!response.ok) {
       throw new Error("Failed to load base translations");
     }
     const baseTranslations = await response.json();
 
     for (const lang in baseTranslations) {
-      if (baseTranslations.hasOwnProperty(lang)) {
+         if (baseTranslations.hasOwnProperty(lang) && lang !== 'languageName' && typeof baseTranslations[lang] === 'object')
+        {
         availableLanguages[lang] = baseTranslations[lang];
       }
     }
-    populateLanguageSelector();
-
-    loadLanguage(languageSelect.value);
+     populateLanguageSelector();
+     loadLanguage(languageSelect.value);
 
 
   } catch (error) {
@@ -134,7 +141,9 @@ function populateLanguageSelector() {
         }
     }
 }
+
 loadAvailableLanguages();
+
 languageSelect.addEventListener('change', () => {
     loadLanguage(languageSelect.value);
 });
