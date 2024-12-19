@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" integrity="sha512-Cv93isQdFwaKBV+Z4oyl8ZXuKzxg+B1cRzQvEmnKKSXvJQuXo8jF6M2K0GBI00JgZzW/H97K15zQ6Hv7h2z+g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
     <div class="chat-container">
@@ -28,53 +29,34 @@
                 </button>
                 </div>
         </div>
-          <div class="chat-input-area">
-           <div class="input-container">
-              <button class="voice-button" id="voice-button" data-i18n="sendByVoice"  aria-label="Enviar por Voz"><i class="fas fa-microphone"></i></button>
-              <input type="text" id="user-input" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje" data-i18n="inputPlaceholder"/>
-               <div class="language-selector">
-                   <select id="language-selector"  aria-label="Seleccionar Idioma" >
-                       <option value="es" data-lang="es" > <i class="flag-icon flag-icon-es"></i> Español</option>
-                       <option value="en"  data-lang="en"  > <i class="flag-icon flag-icon-gb"></i> Inglés</option>
-                      <option value="fr" data-lang="fr" > <i class="flag-icon flag-icon-fr"></i> Francés</option>
-                    <option value="de"  data-lang="de" ><i class="flag-icon flag-icon-de"></i> Alemán</option>
-                     <option value="zh" data-lang="zh"><i class="flag-icon flag-icon-cn"></i> Chino</option>
-                      <option value="ja" data-lang="ja"><i class="flag-icon flag-icon-jp"></i> Japonés</option>
-                        <option value="ru" data-lang="ru"> <i class="flag-icon flag-icon-ru"></i> Ruso</option>
-                        <option value="it" data-lang="it"> <i class="flag-icon flag-icon-it"></i> Italiano</option>
-                   </select>
-                </div>
-              <button id="send-button" aria-label="Enviar Mensaje" data-i18n="sendButton">
-                   <i class="fas fa-paper-plane"></i> Enviar
-               </button>
-               <button id="share-location-button" aria-label="Compartir Ubicacion" ><i class="fas fa-map-marker-alt"></i></button>
-            </div>
-        </div>
          <div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar en el chat..." aria-label="Buscar en el chat" data-i18n="searchPlaceholder"/>
+            <input type="text" id="search-input" placeholder="Buscar en el chat..." aria-label="Buscar en el chat"/>
         </div>
           <div class="chat-messages" id="chat-messages" aria-live="polite">
               <div class="loading-indicator" id="loading-indicator" style="display: none;" data-i18n="loadingIndicator">
                 <i class="fas fa-spinner fa-spin"></i> Gemini está escribiendo...
             </div>
-             <div id="pizarra-container" style="display: none;">
-                <h2>Pizarra Colaborativa</h2>
-               <canvas id="pizarra" width="600" height="400" style="border: 1px solid #fff;"></canvas>
-                <div id="toolbar">
-                   <button id="lapiz-button">Lápiz</button>
-                  <button id="borrador-button">Borrador</button>
-                 <button id="limpiar-button">Limpiar</button>
-                 </div>
-            </div>
-          <div id="notas-container" style="display: none;">
-            <h2>Notas Compartidas</h2>
-           <textarea id="notas" style="width: 90%; height: 200px; color: black; background: #fff; border: 1px solid #ccc;"></textarea>
-          </div>
         </div>
-          <div class="chat-toolbar" style="display: flex; justify-content: space-around;">
-        <button id="toggle-pizarra-button" aria-label="Abrir Pizarra" ><i class="fas fa-pencil-alt"></i> Pizarra</button>
-        <button id="toggle-notas-button" aria-label="Abrir Notas"><i class="fas fa-sticky-note"></i> Notas</button>
-    </div>
+
+        <div class="chat-input-area">
+           <div class="input-container">
+              <button class="voice-button" id="voice-button" data-i18n="sendByVoice"  aria-label="Enviar por Voz"><i class="fas fa-microphone"></i></button>
+              <input type="text" id="user-input" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje" data-i18n="inputPlaceholder"/>
+               <div class="language-selector">
+                   <select id="language-selector"  aria-label="Seleccionar Idioma" >
+                     <option value="es" data-lang="es" > <i class="flag-icon flag-icon-es"></i> Español</option>
+                       <option value="en"  data-lang="en"  > <i class="flag-icon flag-icon-gb"></i> Inglés</option>
+                      <option value="fr" data-lang="fr" > <i class="flag-icon flag-icon-fr"></i> Francés</option>
+                    <option value="de"  data-lang="de" ><i class="flag-icon flag-icon-de"></i> Alemán</option>
+                       </select>
+                </div>
+              <button id="send-button" aria-label="Enviar Mensaje" data-i18n="sendButton">
+                   <i class="fas fa-paper-plane"></i> Enviar
+               </button>
+            </div>
+        </div>
+
+
     <!-- Modal de Configuración -->
     <div class="settings-modal" id="settings-modal">
             <div class="modal-content">
