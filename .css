@@ -31,35 +31,31 @@ body {
     height: 300px;
     overflow-y: scroll;
     margin-bottom: 10px;
-    display: flex;  /* Para alinear los mensajes */
+    display: flex;
     flex-direction: column;
 }
 
-#chat-history p {
-    margin-bottom: 10px; /* Espacio entre mensajes */
-    padding: 8px; /* Espacio interno */
-    border-radius: 8px; /* Bordes redondeados */
-    width: fit-content;
-    max-width: 80%;
-    word-wrap: break-word;
+.message-container {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 70%;
 }
 
-#chat-history .user-message {
-    background-color: #e0f7fa;
+.user-message {
+    background-color: #e0f7fa; /* light blue */
     align-self: flex-end;
 }
 
-#chat-history .gemini-message {
-    background-color: #f0f0f0;
+.bot-message {
+    background-color: #f0f0f0; /* light gray */
     align-self: flex-start;
 }
 
-
-#chat-history hr {
-    border: 0;
-    border-top: 1px solid #eee; /* Línea divisora */
-    margin: 5px 0;
+.message-container p {
+  margin:0;
 }
+
 
 #user-input {
     padding: 8px;
