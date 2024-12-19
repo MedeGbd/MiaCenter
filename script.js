@@ -1,134 +1,57 @@
-    class ChatMessage {
-        constructor(text, isUser, language = 'es') {
-            this.text = text;
-            this.isUser = isUser;
-             this.language = language;
-        }
-    }
+const commandPrefix = "/"; // Prefijo para comandos
+const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso';
+let lastPinterestCard = null;
 
- const chatMessagesDiv = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
-    const clearChatButton = document.querySelector('.clear-chat-button');
-     const settingsButton = document.querySelector('.settings-button');
-      const settingsModal = document.getElementById('settings-modal');
-    const closeSettingsModal = document.getElementById('close-settings-modal');
-      const themeSelector = document.getElementById('theme-selector');
-    const fontSelector = document.getElementById('font-selector');
-     const languageSelector = document.getElementById('language-selector');
-      const translationSelector = document.getElementById('translation-selector');
-     const voiceButton = document.getElementById('voice-button');
-    const saveChatButton = document.querySelector('.save-chat-button');
-     const loadChatButton = document.querySelector('.load-chat-button');
-     const loadChatInput = document.getElementById('load-chat-input');
-    const searchInput = document.getElementById('search-input');
+//  Este es el cambio importante!
+const originalSendMessage = sendMessage;
 
-    const loadingIndicator = document.getElementById('loading-indicator');
-      const apiKey = 'AIzaSyB67nQ8iixZePLp9JNj_1oEDn0TJSvkLso';
-    let chatHistory = [];
-     let isVoiceRecognitionActive = false;
-    let recognition;
-    let translations = {};
-    let currentLanguage = localStorage.getItem('chatLanguage') || 'es';
-    function showLoadingIndicator(show) {
-        loadingIndicator.style.display = show ? 'block' : 'none';
-    }
+ sendMessage = async function() {
+        const messageText = userInput.value.trim();
+           if (!messageText) return;
 
-    function loadChatHistory() {
-        const storedHistory = localStorage.getItem('chatHistory');
-          if (storedHistory) {
-             chatHistory = JSON.parse(storedHistory);
-             chatHistory.forEach(message => addMessageToChat(message));
-         }
-     }
-
-    function saveChatHistory() {
-       localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-   }
-    function applyTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-       const key = element.getAttribute('data-i18n');
-        if (translations[key]) {
-           element.textContent = translations[key];
-       }
-       if(key === 'inputPlaceholder'){
-           element.placeholder =  translations[key];
-      }
-       if (key === 'searchPlaceholder'){
-            searchInput.placeholder = translations[key];
-        }
-   });
+           if (messageText.startsWith(commandPrefix)) {
+             await processCommand(messageText);
+           }else {
+           originalSendMessage();
+           }
 }
-    function addMessageToChat(message) {
-         const messageDiv = document.createElement('div');
-         messageDiv.classList.add('message');
-        if (message.isUser) {
-            messageDiv.classList.add('user-message');
-              messageDiv.classList.add('user-message-color');
-             messageDiv.innerHTML = message.text;
-        } else {
-            messageDiv.classList.add('gemini-message');
-             messageDiv.classList.add('gemini-message-color');
-              let translatedText = message.text;
-                 if (translationSelector.value === 'enabled' && message.language !== languageSelector.value ) {
-                     translateText(message.text, message.language, languageSelector.value).then(translation => {
-                          translatedText = translation;
-                         messageDiv.innerHTML = `${translatedText}  <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>`;
-                    });
-                }else {
-                    messageDiv.innerHTML = `${translatedText}  <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>`;
-                }
-        }
-       chatMessagesDiv.appendChild(messageDiv);
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-    async function translateText(text, sourceLang, targetLang) {
-        try {
-            const response = await fetch('https://translation.googleapis.com/language/translate/v2', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Goog-Api-Key': apiKey,
-                },
-                body: JSON.stringify({
-                    q: text,
-                    source: sourceLang,
-                    target: targetLang
-                }),
-            });
-            if (!response.ok) {
-                throw new Error('Error al traducir el texto: ' + response.status);
-            }
-           const data = await response.json();
-            return data.data.translations[0].translatedText;
-        } catch (error) {
-            console.error("Error al traducir:", error);
-            return text;
-        }
-    }
-    function copyToClipboard(button) {
-        const messageText = button.parentElement.innerText;
-        navigator.clipboard.writeText(messageText)
-            .then(() => {
-               console.log('Texto copiado al portapapeles');
-           })
-            .catch(err => {
-                console.error('Error al copiar texto: ', err);
-            });
-    }
 
-    async function sendMessage() {
-         const messageText = userInput.value.trim();
-            if (!messageText) return;
-                const userMessage = new ChatMessage(messageText, true, languageSelector.value);
-            addMessageToChat(userMessage);
-            chatHistory.push(userMessage);
-             saveChatHistory();
-            userInput.value = '';
-            showLoadingIndicator(true);
-        try {
-             const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-            const response = await fetch(url, {
+
+async function processCommand(commandText) {
+     const trimmedCommand = commandText.trim();
+      const commandParts = trimmedCommand.slice(commandPrefix.length).split(/\s+/);
+    const commandName = commandParts[0];
+      const commandArgs = commandParts.slice(1).join(' ');
+    try {
+        switch (commandName) {
+            case 'wanted':
+                await handleWantedCommand(commandArgs);
+                break;
+            case 'pinterest':
+               await  handlePinterestCommand(commandArgs);
+                break;
+           case 'summarize':
+                await handleSummarizeCommand(commandArgs);
+              break;
+            default:
+              const errorMensaje = new ChatMessage(`Comando desconocido: ${commandName}`, false);
+               addMessageToChat(errorMensaje);
+                 chatHistory.push(errorMensaje);
+                saveChatHistory();
+        }
+    } catch (error) {
+       const errorMensaje = new ChatMessage(`Error al procesar el comando: ${error.message}`, false);
+       addMessageToChat(errorMensaje);
+        chatHistory.push(errorMensaje);
+        saveChatHistory();
+   }
+}
+
+async function handleSummarizeCommand(textToSummarize) {
+      showLoadingIndicator(true);
+   try{
+            const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -136,204 +59,151 @@
                 },
                   body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: messageText }]
+                        parts: [{ text:`Summarize this text: ${textToSummarize}` }]
                     }]
                 }),
             });
             if (!response.ok) {
                 const error = await response.json();
-                 const errorMensaje = new ChatMessage(`Error al obtener respuesta: ${error.error.message}`, false);
-               addMessageToChat(errorMensaje);
-                  chatHistory.push(errorMensaje);
-                 saveChatHistory();
-                   showLoadingIndicator(false);
-                console.error("Error al consumir el API", response.status, error.error.message);
-                return;
+                throw new Error(`Error en el API: ${error.error.message}`);
             }
             const data = await response.json();
-            const geminiResponseText = data.candidates[0].content.parts[0].text;
+              const geminiResponseText = data.candidates[0].content.parts[0].text;
+
             const geminiMessage = new ChatMessage(geminiResponseText, false, 'en');
              addMessageToChat(geminiMessage);
-            chatHistory.push(geminiMessage);
-              saveChatHistory();
-             showLoadingIndicator(false);
+              chatHistory.push(geminiMessage);
+             saveChatHistory();
+               showLoadingIndicator(false);
         } catch (error) {
-            const errorMensaje = new ChatMessage("Error inesperado. Inténtalo de nuevo más tarde.", false);
+           showLoadingIndicator(false);
+           throw error;
+       }
+}
+
+async function handleWantedCommand(imageUrl) {
+        showLoadingIndicator(true);
+    if (!imageUrl) {
+        const errorMensaje = new ChatMessage("Debes proporcionar una URL de imagen.", false);
+        addMessageToChat(errorMensaje);
+         chatHistory.push(errorMensaje);
+          saveChatHistory();
+           showLoadingIndicator(false);
+        return;
+    }
+       try {
+             const url = `https://api-rin-tohsaka.vercel.app/maker/wanted?image=${encodeURIComponent(imageUrl)}`;
+          const response = await fetch(url);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            const errorMensaje = new ChatMessage(`Error de la API de wanted: ${errorText}`, false);
+             addMessageToChat(errorMensaje);
+             chatHistory.push(errorMensaje);
+              saveChatHistory();
+               showLoadingIndicator(false);
+            return;
+        }
+
+           const imageBlob = await response.blob();
+           const imageUrl = URL.createObjectURL(imageBlob);
+           const imageElement = document.createElement('img');
+            imageElement.src = imageUrl;
+           imageElement.style.maxWidth = '100%';
+           const geminiMessage = new ChatMessage("", false);
+           geminiMessage.messageDiv = document.createElement('div');
+           geminiMessage.messageDiv.classList.add('message');
+            geminiMessage.messageDiv.classList.add('gemini-message');
+            geminiMessage.messageDiv.classList.add('gemini-message-color');
+            geminiMessage.messageDiv.appendChild(imageElement);
+            geminiMessage.messageDiv.innerHTML +=  `<button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>`;
+          chatMessagesDiv.appendChild(geminiMessage.messageDiv);
+             chatHistory.push(geminiMessage);
+             saveChatHistory();
+        } catch(error){
+            const errorMensaje = new ChatMessage(`Error al procesar imagen: ${error.message}`, false);
+             addMessageToChat(errorMensaje);
+              chatHistory.push(errorMensaje);
+              saveChatHistory();
+        } finally {
+            showLoadingIndicator(false);
+        }
+}
+async function handlePinterestCommand(searchTerm) {
+     showLoadingIndicator(true);
+
+     if(!searchTerm) {
+         const errorMensaje = new ChatMessage("Debes proporcionar un término de búsqueda.", false);
+          addMessageToChat(errorMensaje);
+           chatHistory.push(errorMensaje);
+            saveChatHistory();
+            showLoadingIndicator(false);
+             return;
+     }
+      try {
+           const url = `https://api.pinterest.com/v1/pins/search?query=${encodeURIComponent(searchTerm)}&limit=1`;
+            const response = await fetch(url, {
+             headers: {
+               'Authorization': 'Bearer 1234567890',  //Reemplaza por una API key de Pinterest si la tienes, si no la API pública va a responder igual
+                'Content-Type': 'application/json'
+           }
+        });
+            if (!response.ok) {
+                 const errorText = await response.text();
+                 const errorMensaje = new ChatMessage(`Error de la API de Pinterest: ${errorText}`, false);
+                 addMessageToChat(errorMensaje);
+                  chatHistory.push(errorMensaje);
+                  saveChatHistory();
+                  showLoadingIndicator(false);
+                 return;
+            }
+           const data = await response.json();
+          if(data.pins && data.pins.length > 0) {
+              const pin = data.pins[0];
+
+              const card = createPinterestCard(pin.images['236x'], pin.title, pin.link);
+               addPinterestCardToChat(card);
+
+               if (lastPinterestCard) {
+                    lastPinterestCard.remove();
+                   }
+                    lastPinterestCard = card;
+           }else {
+                const errorMensaje = new ChatMessage("No se encontraron resultados para tu busqueda en Pinterest.", false);
+                addMessageToChat(errorMensaje);
+                 chatHistory.push(errorMensaje);
+                  saveChatHistory();
+            }
+
+    }
+       catch (error) {
+           const errorMensaje = new ChatMessage(`Error al buscar en Pinterest: ${error.message}`, false);
             addMessageToChat(errorMensaje);
             chatHistory.push(errorMensaje);
-            saveChatHistory();
-                showLoadingIndicator(false);
-           console.error("Error inesperado:", error);
-
-        }
-
-    }
-      function clearChat() {
-            chatMessagesDiv.innerHTML = '';
-             chatHistory = [];
-           localStorage.removeItem('chatHistory');
-        }
-        function saveChat() {
-            const chatData = JSON.stringify(chatHistory);
-            const blob = new Blob([chatData], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-             const a = document.createElement('a');
-           a.href = url;
-          a.download = 'chat_history.json';
-           document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-        }
-        function loadChat(event) {
-            const file = event.target.files[0];
-              if(!file) return;
-               const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                     const loadedHistory = JSON.parse(e.target.result);
-                      if (Array.isArray(loadedHistory)) {
-                          chatHistory = loadedHistory;
-                           chatMessagesDiv.innerHTML = '';
-                        chatHistory.forEach(message => addMessageToChat(message));
-                        saveChatHistory();
-                      } else{
-                          alert("Formato del archivo no es valido")
-                     }
-
-               }catch (error) {
-                      alert("Error al cargar el chat:" + error.message);
-              }
-           };
-         reader.readAsText(file);
-            loadChatInput.value ='';
-
-        }
-        function searchChat(searchTerm){
-            const messages = chatMessagesDiv.querySelectorAll('.message');
-             messages.forEach(message =>{
-                 const messageText = message.textContent;
-                  const regex = new RegExp(searchTerm, 'gi');
-                   const highlightedText = messageText.replace(regex, '<span class="highlight">$&</span>');
-                    message.innerHTML = highlightedText;
-            });
-        }
-    function toggleSettingsModal() {
-        settingsModal.style.display = settingsModal.style.display === 'none' ? 'block' : 'none';
-    }
-    function applyTheme(theme) {
-        document.body.classList.remove('light-theme');
-        if (theme === 'light') {
-            document.body.classList.add('light-theme');
-        }
-       localStorage.setItem('chatTheme', theme);
-    }
-   function applyFont(font) {
-        document.body.style.fontFamily = font;
-        localStorage.setItem('chatFont', font);
-    }
-    async function loadTranslations(lang) {
-        try {
-            const response = await fetch(`${lang}.json`);
-              if (!response.ok) {
-                  throw new Error(`No se pudo cargar el archivo de idioma ${lang}.json`);
-                }
-                translations = await response.json();
-                 applyTranslations();
-
-          } catch (error) {
-              console.error("Error al cargar traducciones:", error);
-          }
-      }
-    function loadSettings() {
-        const storedTheme = localStorage.getItem('chatTheme');
-         if (storedTheme) {
-            applyTheme(storedTheme);
-             themeSelector.value = storedTheme;
-         }
-         const storedFont = localStorage.getItem('chatFont');
-         if (storedFont) {
-            applyFont(storedFont);
-             fontSelector.value = storedFont;
-        }
-        const storedTranslation = localStorage.getItem('chatTranslation');
-         if (storedTranslation) {
-            translationSelector.value = storedTranslation;
-         }
-        loadTranslations(currentLanguage);
-         languageSelector.value = currentLanguage;
-    }
-      function handleSettingsChange(event) {
-         const selectedTheme = themeSelector.value;
-       const selectedFont = fontSelector.value;
-          const selectedTranslation = translationSelector.value;
-      if (event.target.id === 'theme-selector'){
-           applyTheme(selectedTheme);
+             saveChatHistory();
        }
-       if (event.target.id === 'font-selector'){
-           applyFont(selectedFont);
-      }
-        if (event.target.id === 'translation-selector'){
-              localStorage.setItem('chatTranslation', selectedTranslation);
-             chatHistory.forEach(message => addMessageToChat(message));
-         }
-     }
-   function startVoiceRecognition() {
-      if ('webkitSpeechRecognition' in window) {
-          recognition = new webkitSpeechRecognition();
-      } else if ('SpeechRecognition' in window) {
-          recognition = new SpeechRecognition();
-      }
-        if(recognition)
-        {
-             recognition.lang = languageSelector.value;
-           recognition.continuous = false;
-            recognition.interimResults = false;
-
-           recognition.onstart = () => {
-               isVoiceRecognitionActive = true;
-             voiceButton.classList.add('active');
-               voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-               console.log('Reconocimiento de voz iniciado.');
-
-           };
-            recognition.onresult = (event) => {
-                 const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                 sendMessage();
-              stopVoiceRecognition();
-            };
-           recognition.onerror = (event) => {
-              stopVoiceRecognition();
-             console.error('Error en el reconocimiento de voz:', event.error);
-           };
-             recognition.onend = () => {
-                 if(isVoiceRecognitionActive) {
-                     stopVoiceRecognition();
-                 }
-          };
-         recognition.start();
-        } else{
-            alert('La API de Reconocimiento de Voz no es compatible en este navegador.');
+       finally {
+           showLoadingIndicator(false);
         }
-   }
-  function stopVoiceRecognition() {
-        if(recognition) {
-            recognition.stop();
-              voiceButton.classList.remove('active');
-            voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
-        }
-          isVoiceRecognitionActive = false;
-      }
-    async function handleLanguageChange() {
-        currentLanguage = languageSelector.value;
-       localStorage.setItem('chatLanguage', currentLanguage);
-         await loadTranslations(currentLanguage);
-        chatHistory.forEach(message => addMessageToChat(message));
-          if(recognition){
-              recognition.lang = currentLanguage;
-         }
-    }
+}
 
-    clearChatButton.addEventListener('click',
+function createPinterestCard(imageUrl, title, link) {
+    const card = document.createElement('div');
+     card.classList.add('pinterest-message');
+      if(document.body.classList.contains('light-theme')){
+       card.classList.add('light-theme');
+       }
+       card.innerHTML = `
+          <img class="pinterest-image" src="${imageUrl}" alt="${title}">
+           <h3 class="pinterest-title">${title}</h3>
+           <a class="pinterest-link" href="${link}" target="_blank" rel="noopener noreferrer">Ver en Pinterest</a>
+      <button class="copy-button" onclick="copyToClipboard(this)"><i class="fas fa-copy"></i></button>
+      `;
+   return card;
+}
+
+function addPinterestCardToChat(card) {
+    chatMessagesDiv.appendChild(card);
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+}
