@@ -3,112 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Gemini Presidencial</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <meta name="description" content="Chat web interactivo con la API de Gemini, desarrollado para uso presidencial.">
-    <meta name="keywords" content="chat, Gemini, IA, Google, API, presidencial, estados unidos, argentina, inteligencia artificial">
-    <meta name="author" content="Gemini + [Tu Nombre]">
-    <meta property="og:title" content="Chat Gemini Presidencial">
-    <meta property="og:description" content="Chat web interactivo con la API de Gemini, desarrollado para uso presidencial.">
-    <meta property="og:image" content="[URL_A_TU_IMAGEN_DE_PRESENTACIÓN]">
-    <meta property="og:url" content="[URL_DE_TU_PROYECTO]">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Chat Gemini Presidencial">
-    <meta name="twitter:description" content="Chat web interactivo con la API de Gemini, desarrollado para uso presidencial.">
-    <meta name="twitter:image" content="[URL_A_TU_IMAGEN_DE_PRESENTACIÓN]">
+    <title>Chat con Gemini</title>
     <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#007bff">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1 id="main-title">Chat Gemini Presidencial</h1>
-            <nav id="top-nav">
-                <a href="#configuracion">Configuración</a>
-                <a href="#soporte">Soporte</a>
-                <a href="#acerca">Acerca de</a>
-            </nav>
-        </header>
-
+        <h1>Chat con Gemini</h1>
         <div id="chat-container">
-            <div id="chat-messages">
-                <!-- Los mensajes del chat se añadirán aquí -->
-                <div class="message system-message">
-                    <p>Bienvenido al Chat Gemini Presidencial. Pregunta lo que necesites.</p>
-                </div>
-            </div>
-            <div id="input-area">
-                <textarea id="user-input" rows="1" placeholder="Escribe tu mensaje..."></textarea>
-                <button id="send-button">Enviar</button>
-                <div class="options-tray" id="options-tray">
-                    <button id="clear-chat-button">Limpiar Chat</button>
-                    <button id="settings-button">Configuración</button>
-                    <button id="copy-chat-button">Copiar Chat</button>
-                </div>
-            </div>
+            <div id="chat-history"></div>
+            <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
+            <button id="send-button">Enviar</button>
         </div>
-
-        <div id="settings-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" id="close-modal-button">×</span>
-                <h2>Configuración</h2>
-                <div class="settings-section">
-                   
-                   <input type="hidden" id="api-key-input" value="kPVaJ4AmXOxsd8AkDSjtFyeSstecoVVWXMmsB8oONkechiB4Bgs81CDVP">
-                </div>
-                <div class="settings-section">
-                    <label for="model-select">Modelo Gemini:</label>
-                    <select id="model-select">
-                        <option value="gemini-pro">gemini-pro</option>
-                        <option value="gemini-pro-vision">gemini-pro-vision</option>
-                        <option value="gemini-ultra">gemini-ultra (Premium)</option>
-                    </select>
-                </div>
-                <div class="settings-section">
-                    <label for="max-tokens-input">Max. Tokens:</label>
-                    <input type="number" id="max-tokens-input" value="200" min="10" max="2048">
-                    <small class="error-message" id="max-tokens-error"></small>
-                </div>
-                <div class="settings-section">
-                    <label for="temperature-input">Temperatura:</label>
-                    <input type="number" id="temperature-input" value="0.5" min="0" max="1" step="0.1">
-                    <small class="error-message" id="temperature-error"></small>
-                </div>
-                <div class="settings-section">
-                    <label for="top-p-input">Top-P:</label>
-                    <input type="number" id="top-p-input" value="0.9" min="0" max="1" step="0.1">
-                    <small class="error-message" id="top-p-error"></small>
-                </div>
-                <div class="settings-section">
-                    <button id="save-settings-button">Guardar Configuración</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading-overlay" class="overlay">
-            <div class="loading-spinner"></div>
-        </div>
-
-        <div id="error-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" id="close-error-button">×</span>
-                <h2>Error</h2>
-                <p id="error-message-text"></p>
-            </div>
-        </div>
-
-        <footer class="main-footer">
-            <p>© 2024 Chat Gemini Presidencial</p>
-            <nav id="bottom-nav">
-              <a href="#privacidad">Privacidad</a>
-              <a href="#terminos">Términos</a>
-              <a href="#contacto">Contacto</a>
-            </nav>
-        </footer>
     </div>
     <script src="script.js"></script>
 </body>
