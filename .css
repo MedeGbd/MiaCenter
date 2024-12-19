@@ -1,37 +1,37 @@
 body {
-  font-family: sans-serif;
-  background-color: #f4f4f4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
 .container {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 600px;
-  text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
 }
 
 #chat-container {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  border: 2px solid #007bff;
-  border-radius: 8px;
-  position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    position: relative;
 }
 
 #chat-history {
-  padding: 10px;
-  height: 300px;
-  overflow-y: scroll;
-  margin-bottom: 10px;
+    padding: 10px;
+    height: 300px;
+    overflow-y: scroll;
+    margin-bottom: 10px;
 }
 
 #chat-history p {
@@ -52,9 +52,9 @@ body {
 }
 
 #chat-history hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 5px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 5px 0;
 }
 
 .input-area {
@@ -94,8 +94,8 @@ body {
   animation: spin 1s linear infinite;
 }
 .language-selector {
-    text-align: right; /* Align the select to the right */
-    margin-bottom: 10px; /* Add some spacing below the select */
+    text-align: right;
+    margin-bottom: 10px;
 }
 @keyframes spin {
   0% { transform: translate(-50%, 0) rotate(0deg); }
