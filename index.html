@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat con Gemini</title>
+    <title>Chat Mini</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Chat con Gemini</h1>
-        <div id="chat-container">
-            <div id="chat-history"></div>
-            <input type="text" id="user-input" placeholder="Escribe tu pregunta...">
-            <button id="send-button">Enviar</button>
+
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <!-- Los mensajes del chat se agregarán aquí -->
         </div>
+
+        <div class="input-container">
+            <input type="text" id="user-message" placeholder="Escribe tu mensaje..." />
+            <button id="send-btn">Enviar</button>
+        </div>
+
+        <div id="status-message" class="status-message"></div> <!-- Área para mensajes de estado -->
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
